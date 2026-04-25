@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contrat de Bail</title>
+<style>body{font-family:system-ui;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.pin-overlay{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:#243050;border:2px solid #2a3655;transition:.2s}.pin-dot.filled{background:#3b82f6}
+.pin-btn{width:64px;height:52px;border-radius:10px;background:#1a2236;border:1px solid #2a3655;color:#e2e8f0;font-size:1.2rem;font-weight:600;cursor:pointer}.pin-btn:hover{background:#243050}
+</style></head><body>
+<div id="pin-lock" class="pin-overlay">
+  <div style="text-align:center"><div style="font-size:3rem">📋</div><h1 style="font-size:1.2rem;color:#fbbf24">Contrat de Bail — Accès sécurisé</h1><p style="color:#64748b;font-size:.82rem">Entrez votre code PIN</p></div>
+  <div style="display:flex;gap:12px" id="pin-dots"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
+  <div id="pin-error" style="color:#ef4444;font-size:.82rem;min-height:20px"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,64px);gap:8px">
+    <button class="pin-btn" onclick="pk('1')">1</button><button class="pin-btn" onclick="pk('2')">2</button><button class="pin-btn" onclick="pk('3')">3</button>
+    <button class="pin-btn" onclick="pk('4')">4</button><button class="pin-btn" onclick="pk('5')">5</button><button class="pin-btn" onclick="pk('6')">6</button>
+    <button class="pin-btn" onclick="pk('7')">7</button><button class="pin-btn" onclick="pk('8')">8</button><button class="pin-btn" onclick="pk('9')">9</button>
+    <button class="pin-btn" onclick="pk('clr')" style="font-size:.8rem">CLR</button><button class="pin-btn" onclick="pk('0')">0</button><button class="pin-btn" onclick="pk('del')" style="color:#ef4444">⌫</button>
+  </div>
+</div>
+<div id="ct" style="display:none;max-width:800px;margin:40px auto;padding:20px">
+  <pre id="ct-text" style="white-space:pre-wrap;font-family:system-ui;font-size:.85rem;line-height:1.8;background:#111827;border:1px solid #2a3655;border-radius:12px;padding:24px"></pre>
+  <div style="text-align:center;margin-top:16px"><button onclick="_dl()" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:.85rem;font-weight:700;cursor:pointer">💾 Télécharger le contrat</button></div>
+</div>
+<script>
+var _p='',_h='ceaa28bba4caba687dc31b1bbe79eca3c70c33f871f1ce8f528cf9ab5cfd76dd',_c='Q09OVFJBVCBERSBMT0NBVElPTgrilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKCkVOVFJFIExFUyBTT1VTU0lHTsOJUyA6CgpMRSBCQUlMTEVVUiA6CkVMIE9VQVJESSBZYXNzaW5lCjMgQWxsw6llIGR1IFBvdXJxdW9pIFBhcywgOTEwMDAgw4l2cnkKCkxFIExPQ0FUQUlSRSA6CkVaWkFISUQgU2FtaXIKCklMIEEgw4lUw4kgQ09OVkVOVSBFVCBBUlLDilTDiSBDRSBRVUkgU1VJVCA6CgpBUlRJQ0xFIDEg4oCUIE9CSkVUIERVIENPTlRSQVQKTGUgQmFpbGxldXIgZG9ubmUgZW4gbG9jYXRpb24gYXUgTG9jYXRhaXJlLCBxdWkgYWNjZXB0ZSwgdW4gbG9nZW1lbnQgc2l0dcOpIDoKRVZFUlksIDMgQWxsw6llIGR1IFBvdXJxdW9pIFBhcywgOTEwMDAgw4l2cnkKCkFSVElDTEUgMiDigJQgRFVSw4lFCkxlIHByw6lzZW50IGNvbnRyYXQgZXN0IGNvbmNsdSBwb3VyIHVuZSBkdXLDqWUgZGUgMTIgbW9pcy4KRGF0ZSBkZSBkw6lidXQgOiAwMS8xMC8yMDI0CkRhdGUgZGUgZmluIDogMDEvMTAvMjAyNQoKQVJUSUNMRSAzIOKAlCBMT1lFUiBFVCBDSEFSR0VTCkxveWVyIG1lbnN1ZWwgOiA0MDAsMDAg4oKsClByb3Zpc2lvbiBwb3VyIGNoYXJnZXMgOiA1MCwwMCDigqwKVG90YWwgbWVuc3VlbCA6IDQ1MCwwMCDigqwKCkxlIGxveWVyIGVzdCBwYXlhYmxlIGxlIDUgZGUgY2hhcXVlIG1vaXMsIGQnYXZhbmNlLgoKQVJUSUNMRSA0IOKAlCBEw4lQw5RUIERFIEdBUkFOVElFCkxlIGxvY2F0YWlyZSB2ZXJzZSDDoCBsYSBzaWduYXR1cmUgdW4gZMOpcMO0dCBkZSBnYXJhbnRpZSBkZSA0MDAsMDAg4oKsLgoKQVJUSUNMRSA1IOKAlCBDSEFSR0VTIFLDiUNVUMOJUkFCTEVTCkxlcyBjaGFyZ2VzIGxvY2F0aXZlcyBjb21wcmVubmVudCA6IGVhdSBmcm9pZGUsIGVudHJldGllbiBkZXMgcGFydGllcyBjb21tdW5lcywKdGF4ZSBkJ2VubMOodmVtZW50IGRlcyBvcmR1cmVzIG3DqW5hZ8OocmVzLgoKQVJUSUNMRSA2IOKAlCBPQkxJR0FUSU9OUyBEVSBMT0NBVEFJUkUKTGUgbG9jYXRhaXJlIHMnZW5nYWdlIMOgIDoKLSBQYXllciBsZSBsb3llciBldCBsZXMgY2hhcmdlcyBhdXggdGVybWVzIGNvbnZlbnVzCi0gVXNlciBwYWlzaWJsZW1lbnQgZGVzIGxvY2F1eAotIFLDqXBvbmRyZSBkZXMgZMOpZ3JhZGF0aW9ucwotIE5lIHBhcyBzb3VzLWxvdWVyIHNhbnMgYWNjb3JkIGR1IGJhaWxsZXVyCi0gU291c2NyaXJlIHVuZSBhc3N1cmFuY2UgaGFiaXRhdGlvbgoKQVJUSUNMRSA3IOKAlCBPQkxJR0FUSU9OUyBEVSBCQUlMTEVVUgpMZSBiYWlsbGV1ciBzJ2VuZ2FnZSDDoCA6Ci0gRMOpbGl2cmVyIHVuIGxvZ2VtZW50IGTDqWNlbnQKLSBBc3N1cmVyIGxhIGpvdWlzc2FuY2UgcGFpc2libGUgZHUgbG9nZW1lbnQKLSBFbnRyZXRlbmlyIGxlcyBsb2NhdXggZW4gw6l0YXQgZGUgc2VydmlyCi0gRMOpbGl2cmVyIHVuZSBxdWl0dGFuY2UgZGUgbG95ZXIKCkFSVElDTEUgOCDigJQgTE9JIEFQUExJQ0FCTEUKTGUgcHLDqXNlbnQgY29udHJhdCBlc3Qgc291bWlzIMOgIGxhIExvaSBuwrAgODktNDYyIGR1IDYganVpbGxldCAxOTg5LgoKRmFpdCBlbiBkZXV4IGV4ZW1wbGFpcmVzIMOgIMOJdnJ5LCBsZSAwMS8xMC8yMDI0CgpMZSBCYWlsbGV1ciAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIExlIExvY2F0YWlyZQpFTCBPVUFSREkgWWFzc2luZSAgICAgICAgICAgICAgRVpaQUhJRCBTYW1pcgo=';
+function _b(s){try{return atob(s)}catch{return s}}
+async function _sha(t){var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function pk(k){if(k==='clr'){_p='';ud();document.getElementById('pin-error').textContent='';return}if(k==='del'){_p=_p.slice(0,-1);ud();return}if(_p.length>=4)return;_p+=k;ud();if(_p.length===4)_sha(_p).then(function(h){if(h===_h){document.getElementById('pin-lock').style.display='none';document.getElementById('ct').style.display='block';document.getElementById('ct-text').textContent=_b(_c)}else{document.getElementById('pin-error').textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}})}
+function ud(){for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_p.length)}}
+function _dl(){var t=_b(_c);var bl=new Blob([t],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='Contrat_Bail.txt';a.click()}
+</script></body></html>
