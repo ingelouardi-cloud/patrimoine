@@ -228,7 +228,12 @@ def generate_portal_html(loc, page_uuid, contrat_uuid):
     if not messages_html:
         messages_html = '<div style="color:#64748b;font-size:.82rem">Aucun message pour le moment.</div>'
 
-    contrat_url = f'../contrats/{contrat_uuid}.html'
+    # Use real bail PDF from GED if available
+    bail_pdf = loc.get('bail_pdf', '')
+    if bail_pdf:
+        contrat_url = f'../contrats/{page_uuid}-bail.pdf'
+    else:
+        contrat_url = f'../contrats/{contrat_uuid}.html'
 
     return f'''<!DOCTYPE html>
 <html lang="fr">
@@ -437,13 +442,22 @@ def main():
         portal_path = PUBLIC / f'{page_uuid}.html'
         portal_path.write_text(portal_html, encoding='utf-8')
 
-        # Generate contrat HTML
-        contrat_html = generate_contrat_html(loc, contrat_uuid)
-        contrat_path = CONTRATS / f'{contrat_uuid}.html'
-        contrat_path.write_text(contrat_html, encoding='utf-8')
+        # Copy real bail PDF from GED or generate HTML contrat
+        import shutil
+        GED_DIR = Path(os.path.expanduser('~/Downloads/patrimoine-app/ged_documents'))
+        bail_pdf = loc.get('bail_pdf', '')
+        if bail_pdf and (GED_DIR / bail_pdf).exists():
+            bail_dest = CONTRATS / f'{page_uuid}-bail.pdf'
+            shutil.copy2(GED_DIR / bail_pdf, bail_dest)
+            contrat_url_full = f'https://ingelouardi-cloud.github.io/patrimoine/contrats/{page_uuid}-bail.pdf'
+            print(f"     Bail PDF: {bail_pdf} -> {bail_dest.name}")
+        else:
+            contrat_html = generate_contrat_html(loc, contrat_uuid)
+            contrat_path = CONTRATS / f'{contrat_uuid}.html'
+            contrat_path.write_text(contrat_html, encoding='utf-8')
+            contrat_url_full = f'https://ingelouardi-cloud.github.io/patrimoine/contrats/{contrat_uuid}.html'
 
         portal_url = f'https://ingelouardi-cloud.github.io/patrimoine/public/{page_uuid}.html'
-        contrat_url_full = f'https://ingelouardi-cloud.github.io/patrimoine/contrats/{contrat_uuid}.html'
 
         manifest.append({
             'nom': nom,
