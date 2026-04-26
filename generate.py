@@ -57,7 +57,9 @@ def sha256(text):
 
 
 def b64encode(text):
-    return base64.b64encode(text.encode()).hexdigest() if False else base64.b64encode(text.encode()).decode()
+    # Encode UTF-8 bytes as percent-encoded then base64, so JS can decode properly
+    encoded = text.encode('utf-8')
+    return base64.b64encode(encoded).decode('ascii')
 
 
 def generate_uuid():
@@ -231,7 +233,7 @@ def generate_portal_html(loc, page_uuid, contrat_uuid):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portail Locataire</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
 body{{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh}}
 .pin-overlay{{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}}
@@ -311,7 +313,7 @@ body{{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8
 <script>
 var _p='',_h='{pin_hash}';
 var _d={{n:'{nom_b64}',b:'{bien_b64}',l:'{loyer_b64}',c:'{charges_b64}',ct:'{contrat_b64}'}};
-function _b(s){{try{{return atob(s)}}catch{{return s}}}}
+function _b(s){{try{{var b=atob(s);var bytes=new Uint8Array(b.length);for(var i=0;i<b.length;i++)bytes[i]=b.charCodeAt(i);return new TextDecoder('utf-8').decode(bytes)}}catch(e){{return s}}}}
 async function _sha(t){{var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}}
 function pk(k){{
   if(k==='clr'){{_p='';ud();document.getElementById('pin-error').textContent='';return}}
@@ -329,7 +331,7 @@ function pk(k){{
   }})
 }}
 function ud(){{for(var i=0;i<4;i++){{var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_p.length)}}}}
-function _loadJsPDF(cb){{if(window.jspdf)return cb();var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';s.onload=cb;document.head.appendChild(s)}}
+function _loadJsPDF(cb){{cb()}}
 function _dlQ(b,m){{_loadJsPDF(function(){{var t=_b(b);var lines=t.split('\\n');var doc=new jspdf.jsPDF();var y=20;doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('QUITTANCE DE LOYER',105,y,{{align:'center'}});y+=7;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Loi du 6 juillet 1989 - Article 21',105,y,{{align:'center'}});y+=10;doc.setTextColor(0);doc.setFontSize(10);lines.forEach(function(l){{if(y>270){{doc.addPage();y=20}}doc.text(l.substring(0,90),14,y);y+=5.5}});doc.save('Quittance_'+m+'.pdf')}})}}
 function _dlC(){{_loadJsPDF(function(){{var t=_b(_d.ct);var lines=t.split('\\n');var doc=new jspdf.jsPDF();var y=20;doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('CONTRAT DE BAIL',105,y,{{align:'center'}});y+=7;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Loi n. 89-462 du 6 juillet 1989',105,y,{{align:'center'}});y+=10;doc.setTextColor(0);doc.setFontSize(10);lines.forEach(function(l){{if(y>270){{doc.addPage();y=20}}if(l.startsWith('ARTICLE')||l.startsWith('LE ')||l.startsWith('ENTRE')){{doc.setFont('helvetica','bold')}}else{{doc.setFont('helvetica','normal')}}doc.text(l.substring(0,90),14,y);y+=5.5}});doc.save('Contrat_Bail.pdf')}})}}
 
@@ -346,7 +348,7 @@ def generate_contrat_html(loc, contrat_uuid):
     return f'''<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contrat de Bail</title>
-<style>body{{font-family:system-ui;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script><style>body{{font-family:system-ui;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center}}
 .pin-overlay{{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}}
 .pin-dot{{width:14px;height:14px;border-radius:50%;background:#243050;border:2px solid #2a3655;transition:.2s}}.pin-dot.filled{{background:#3b82f6}}
 .pin-btn{{width:64px;height:52px;border-radius:10px;background:#1a2236;border:1px solid #2a3655;color:#e2e8f0;font-size:1.2rem;font-weight:600;cursor:pointer}}.pin-btn:hover{{background:#243050}}
@@ -368,7 +370,7 @@ def generate_contrat_html(loc, contrat_uuid):
 </div>
 <script>
 var _p='',_h='{pin_hash}',_c='{contrat_b64}';
-function _b(s){{try{{return atob(s)}}catch{{return s}}}}
+function _b(s){{try{{var b=atob(s);var bytes=new Uint8Array(b.length);for(var i=0;i<b.length;i++)bytes[i]=b.charCodeAt(i);return new TextDecoder('utf-8').decode(bytes)}}catch(e){{return s}}}}
 async function _sha(t){{var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}}
 function pk(k){{if(k==='clr'){{_p='';ud();document.getElementById('pin-error').textContent='';return}}if(k==='del'){{_p=_p.slice(0,-1);ud();return}}if(_p.length>=4)return;_p+=k;ud();if(_p.length===4)_sha(_p).then(function(h){{if(h===_h){{document.getElementById('pin-lock').style.display='none';document.getElementById('ct').style.display='block';document.getElementById('ct-text').textContent=_b(_c)}}else{{document.getElementById('pin-error').textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}}}})}}
 function ud(){{for(var i=0;i<4;i++){{var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_p.length)}}}}
