@@ -329,8 +329,10 @@ function pk(k){{
   }})
 }}
 function ud(){{for(var i=0;i<4;i++){{var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_p.length)}}}}
-function _dlQ(b,m){{var t=_b(b);var bl=new Blob([t],{{type:'text/plain;charset=utf-8'}});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='Quittance_'+m+'.txt';a.click()}}
-function _dlC(){{var t=_b(_d.ct);var bl=new Blob([t],{{type:'text/plain;charset=utf-8'}});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='Contrat_Bail.txt';a.click()}}
+function _loadJsPDF(cb){{if(window.jspdf)return cb();var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';s.onload=cb;document.head.appendChild(s)}}
+function _dlQ(b,m){{_loadJsPDF(function(){{var t=_b(b);var lines=t.split('\\n');var doc=new jspdf.jsPDF();var y=20;doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('QUITTANCE DE LOYER',105,y,{{align:'center'}});y+=7;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Loi du 6 juillet 1989 - Article 21',105,y,{{align:'center'}});y+=10;doc.setTextColor(0);doc.setFontSize(10);lines.forEach(function(l){{if(y>270){{doc.addPage();y=20}}doc.text(l.substring(0,90),14,y);y+=5.5}});doc.save('Quittance_'+m+'.pdf')}})}}
+function _dlC(){{_loadJsPDF(function(){{var t=_b(_d.ct);var lines=t.split('\\n');var doc=new jspdf.jsPDF();var y=20;doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('CONTRAT DE BAIL',105,y,{{align:'center'}});y+=7;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Loi n. 89-462 du 6 juillet 1989',105,y,{{align:'center'}});y+=10;doc.setTextColor(0);doc.setFontSize(10);lines.forEach(function(l){{if(y>270){{doc.addPage();y=20}}if(l.startsWith('ARTICLE')||l.startsWith('LE ')||l.startsWith('ENTRE')){{doc.setFont('helvetica','bold')}}else{{doc.setFont('helvetica','normal')}}doc.text(l.substring(0,90),14,y);y+=5.5}});doc.save('Contrat_Bail.pdf')}})}}
+
 </script>
 </body></html>'''
 
