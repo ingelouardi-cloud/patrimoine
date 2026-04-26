@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portail Locataire</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh}
 .pin-overlay{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
@@ -53,7 +53,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8f
         <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;margin-bottom:8px">
           <span style="font-size:1.2rem">📋</span>
           <div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail</div><div style="font-size:.7rem;color:#64748b">Durée 9 mois</div></div>
-          <a href="../contrats/dee403ae-379d-4c2f-9125-1a5e9728802b.html" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">📥 Ouvrir</a>
+          <a href="../contrats/bfeba63b-5e3f-4691-83e7-4031738827d7.html" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">📥 Ouvrir</a>
           <button onclick="_dlC()" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;font-weight:600">💾 Télécharger</button>
         </div>
       </div>
@@ -137,9 +137,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8f
 </div>
 
 <script>
-var _p='',_h='5f65bd0309b05d2a595c7067618d833c4bc7a3ef720f715857c413512de1b0c2';
+var _p='',_h='9428fb36117251d5231a2fa6120aba5dc189a77a90304fe9349f8533c10224f1';
 var _d={n:'RFJBQSBBYmRlbGlsYWg=',b:'RVZFUlk=',l:'NDAw',c:'NTA=',ct:'Q09OVFJBVCBERSBMT0NBVElPTgrilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKCkVOVFJFIExFUyBTT1VTU0lHTsOJUyA6CgpMRSBCQUlMTEVVUiA6CkVMIE9VQVJESSBZYXNzaW5lCjMgQWxsw6llIGR1IFBvdXJxdW9pIFBhcywgOTEwMDAgw4l2cnkKCkxFIExPQ0FUQUlSRSA6CkRSQUEgQWJkZWxpbGFoCgpJTCBBIMOJVMOJIENPTlZFTlUgRVQgQVJSw4pUw4kgQ0UgUVVJIFNVSVQgOgoKQVJUSUNMRSAxIOKAlCBPQkpFVCBEVSBDT05UUkFUCkxlIEJhaWxsZXVyIGRvbm5lIGVuIGxvY2F0aW9uIGF1IExvY2F0YWlyZSwgcXVpIGFjY2VwdGUsIHVuIGxvZ2VtZW50IHNpdHXDqSA6CkVWRVJZLCAzIEFsbMOpZSBkdSBQb3VycXVvaSBQYXMsIDkxMDAwIMOJdnJ5CgpBUlRJQ0xFIDIg4oCUIERVUsOJRQpMZSBwcsOpc2VudCBjb250cmF0IGVzdCBjb25jbHUgcG91ciB1bmUgZHVyw6llIGRlIDkgbW9pcy4KRGF0ZSBkZSBkw6lidXQgOiAzMC8wOS8yMDI1CkRhdGUgZGUgZmluIDogMzAvMDYvMjAyNgoKQVJUSUNMRSAzIOKAlCBMT1lFUiBFVCBDSEFSR0VTCkxveWVyIG1lbnN1ZWwgOiA0MDAsMDAg4oKsClByb3Zpc2lvbiBwb3VyIGNoYXJnZXMgOiA1MCwwMCDigqwKVG90YWwgbWVuc3VlbCA6IDQ1MCwwMCDigqwKCkxlIGxveWVyIGVzdCBwYXlhYmxlIGxlIDUgZGUgY2hhcXVlIG1vaXMsIGQnYXZhbmNlLgoKQVJUSUNMRSA0IOKAlCBEw4lQw5RUIERFIEdBUkFOVElFCkxlIGxvY2F0YWlyZSB2ZXJzZSDDoCBsYSBzaWduYXR1cmUgdW4gZMOpcMO0dCBkZSBnYXJhbnRpZSBkZSA0MDAsMDAg4oKsLgoKQVJUSUNMRSA1IOKAlCBDSEFSR0VTIFLDiUNVUMOJUkFCTEVTCkxlcyBjaGFyZ2VzIGxvY2F0aXZlcyBjb21wcmVubmVudCA6IGVhdSBmcm9pZGUsIGVudHJldGllbiBkZXMgcGFydGllcyBjb21tdW5lcywKdGF4ZSBkJ2VubMOodmVtZW50IGRlcyBvcmR1cmVzIG3DqW5hZ8OocmVzLgoKQVJUSUNMRSA2IOKAlCBPQkxJR0FUSU9OUyBEVSBMT0NBVEFJUkUKTGUgbG9jYXRhaXJlIHMnZW5nYWdlIMOgIDoKLSBQYXllciBsZSBsb3llciBldCBsZXMgY2hhcmdlcyBhdXggdGVybWVzIGNvbnZlbnVzCi0gVXNlciBwYWlzaWJsZW1lbnQgZGVzIGxvY2F1eAotIFLDqXBvbmRyZSBkZXMgZMOpZ3JhZGF0aW9ucwotIE5lIHBhcyBzb3VzLWxvdWVyIHNhbnMgYWNjb3JkIGR1IGJhaWxsZXVyCi0gU291c2NyaXJlIHVuZSBhc3N1cmFuY2UgaGFiaXRhdGlvbgoKQVJUSUNMRSA3IOKAlCBPQkxJR0FUSU9OUyBEVSBCQUlMTEVVUgpMZSBiYWlsbGV1ciBzJ2VuZ2FnZSDDoCA6Ci0gRMOpbGl2cmVyIHVuIGxvZ2VtZW50IGTDqWNlbnQKLSBBc3N1cmVyIGxhIGpvdWlzc2FuY2UgcGFpc2libGUgZHUgbG9nZW1lbnQKLSBFbnRyZXRlbmlyIGxlcyBsb2NhdXggZW4gw6l0YXQgZGUgc2VydmlyCi0gRMOpbGl2cmVyIHVuZSBxdWl0dGFuY2UgZGUgbG95ZXIKCkFSVElDTEUgOCDigJQgTE9JIEFQUExJQ0FCTEUKTGUgcHLDqXNlbnQgY29udHJhdCBlc3Qgc291bWlzIMOgIGxhIExvaSBuwrAgODktNDYyIGR1IDYganVpbGxldCAxOTg5LgoKRmFpdCBlbiBkZXV4IGV4ZW1wbGFpcmVzIMOgIMOJdnJ5LCBsZSAzMC8wOS8yMDI1CgpMZSBCYWlsbGV1ciAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIExlIExvY2F0YWlyZQpFTCBPVUFSREkgWWFzc2luZSAgICAgICAgICAgICAgRFJBQSBBYmRlbGlsYWgK'};
-function _b(s){try{return atob(s)}catch{return s}}
+function _b(s){try{var b=atob(s);var bytes=new Uint8Array(b.length);for(var i=0;i<b.length;i++)bytes[i]=b.charCodeAt(i);return new TextDecoder('utf-8').decode(bytes)}catch(e){return s}}
 async function _sha(t){var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function pk(k){
   if(k==='clr'){_p='';ud();document.getElementById('pin-error').textContent='';return}
@@ -157,7 +157,7 @@ function pk(k){
   })
 }
 function ud(){for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_p.length)}}
-function _loadJsPDF(cb){if(window.jspdf)return cb();var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';s.onload=cb;document.head.appendChild(s)}
+function _loadJsPDF(cb){cb()}
 function _dlQ(b,m){_loadJsPDF(function(){var t=_b(b);var lines=t.split('\n');var doc=new jspdf.jsPDF();var y=20;doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('QUITTANCE DE LOYER',105,y,{align:'center'});y+=7;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Loi du 6 juillet 1989 - Article 21',105,y,{align:'center'});y+=10;doc.setTextColor(0);doc.setFontSize(10);lines.forEach(function(l){if(y>270){doc.addPage();y=20}doc.text(l.substring(0,90),14,y);y+=5.5});doc.save('Quittance_'+m+'.pdf')})}
 function _dlC(){_loadJsPDF(function(){var t=_b(_d.ct);var lines=t.split('\n');var doc=new jspdf.jsPDF();var y=20;doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('CONTRAT DE BAIL',105,y,{align:'center'});y+=7;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Loi n. 89-462 du 6 juillet 1989',105,y,{align:'center'});y+=10;doc.setTextColor(0);doc.setFontSize(10);lines.forEach(function(l){if(y>270){doc.addPage();y=20}if(l.startsWith('ARTICLE')||l.startsWith('LE ')||l.startsWith('ENTRE')){doc.setFont('helvetica','bold')}else{doc.setFont('helvetica','normal')}doc.text(l.substring(0,90),14,y);y+=5.5});doc.save('Contrat_Bail.pdf')})}
 
