@@ -60,10 +60,8 @@ def b64encode(text):
     return base64.b64encode(text.encode()).hexdigest() if False else base64.b64encode(text.encode()).decode()
 
 
-def generate_uuid(seed=None):
-    """UUID déterministe basé sur le seed (nom locataire). Ne change jamais."""
-    if seed:
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, seed))
+def generate_uuid():
+    """UUID aléatoire — nouveau à chaque génération."""
     return str(uuid.uuid4())
 
 
@@ -393,8 +391,11 @@ def main():
     for loc in LOCATAIRES:
         nom = loc['nom']
         prenom = loc['prenom']
-        page_uuid = generate_uuid(f'portal-{nom}-{prenom}')
-        contrat_uuid = generate_uuid(f'contrat-{nom}-{prenom}')
+        page_uuid = generate_uuid()
+        contrat_uuid = generate_uuid()
+        # Generate new random PIN
+        pin = str(1000 + __import__('random').randint(0, 8999))
+        loc['pin'] = pin
 
         # Generate portal HTML
         portal_html = generate_portal_html(loc, page_uuid, contrat_uuid)
