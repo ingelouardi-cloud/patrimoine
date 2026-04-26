@@ -29,15 +29,15 @@ LOCATAIRES = [
         'nom': 'DRAA', 'prenom': 'Abdelilah',
         'bien': 'EVERY', 'adresse': '3 Allée du Pourquoi Pas, 91000 Évry',
         'loyer': 400, 'charges': 50,
-        'date_debut': '2025-10-01', 'duree_mois': 12,
+        'date_debut': '2025-09-30', 'duree_mois': 9,
         'depot': 400, 'pin': '1234',
         'messages': []
     },
     {
         'nom': 'MESBAH', 'prenom': 'Abderahmane',
-        'bien': 'EVERY', 'adresse': '3 Allée du Pourquoi Pas, 91000 Évry',
+        'bien': 'EVERY', 'adresse': '1 rue Jean Jacques Rousseau, 94200 Ivry-sur-Seine',
         'loyer': 400, 'charges': 50,
-        'date_debut': '2026-04-25', 'duree_mois': 12,
+        'date_debut': '2026-04-01', 'duree_mois': 12,
         'depot': 400, 'pin': '2219',
         'messages': []
     },
@@ -45,7 +45,7 @@ LOCATAIRES = [
         'nom': 'EZZAHID', 'prenom': 'Samir',
         'bien': 'EVERY', 'adresse': '3 Allée du Pourquoi Pas, 91000 Évry',
         'loyer': 400, 'charges': 50,
-        'date_debut': '2025-10-01', 'duree_mois': 12,
+        'date_debut': '2026-02-01', 'duree_mois': 12,
         'depot': 400, 'pin': '3456',
         'messages': []
     },
