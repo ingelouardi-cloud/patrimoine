@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portail Locataire</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:system-ui;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh}.pin-overlay{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}.pin-dot{width:14px;height:14px;border-radius:50%;background:#243050;border:2px solid #2a3655;transition:.2s}.pin-dot.filled{background:#3b82f6}.pin-btn{width:64px;height:52px;border-radius:10px;background:#1a2236;border:1px solid #2a3655;color:#e2e8f0;font-size:1.2rem;font-weight:600;cursor:pointer}.pin-btn:hover{background:#243050}</style></head><body>
+<div id="pl" class="pin-overlay"><div style="text-align:center"><div style="font-size:3rem">🏠</div><h1 style="font-size:1.4rem;color:#fbbf24">Portail Locataire</h1><p style="color:#64748b;font-size:.85rem">Entrez votre code PIN</p></div>
+<div style="display:flex;gap:12px" id="pd"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
+<div id="pe" style="color:#ef4444;font-size:.82rem;min-height:20px"></div>
+<div style="display:grid;grid-template-columns:repeat(3,64px);gap:8px"><button class="pin-btn" onclick="pk('1')">1</button><button class="pin-btn" onclick="pk('2')">2</button><button class="pin-btn" onclick="pk('3')">3</button><button class="pin-btn" onclick="pk('4')">4</button><button class="pin-btn" onclick="pk('5')">5</button><button class="pin-btn" onclick="pk('6')">6</button><button class="pin-btn" onclick="pk('7')">7</button><button class="pin-btn" onclick="pk('8')">8</button><button class="pin-btn" onclick="pk('9')">9</button><button class="pin-btn" onclick="pk('clr')" style="font-size:.8rem">CLR</button><button class="pin-btn" onclick="pk('0')">0</button><button class="pin-btn" onclick="pk('del')" style="color:#ef4444">⌫</button></div></div>
+
+<div id="pc" style="display:none">
+<div style="background:#111827;border-bottom:1px solid #2a3655;padding:16px 24px;display:flex;align-items:center;gap:12px">
+<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">M</div>
+<div><div style="font-weight:800;font-size:1rem">MESBAH Abderahmane</div><div style="font-size:.72rem;color:#64748b">Locataire - EVERY</div></div>
+<div style="margin-left:auto;text-align:right"><div style="font-size:.68rem;color:#64748b">Loyer mensuel</div><div style="font-size:1.2rem;font-weight:800;color:#fbbf24">400 EUR</div></div></div>
+
+<div style="max-width:900px;margin:24px auto;padding:0 16px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
+<div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Bien</div><div style="font-size:1rem;font-weight:700;margin-top:4px">EVERY</div></div>
+<div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Debut contrat</div><div style="font-size:1rem;font-weight:700;margin-top:4px;color:#10b981">01/04/2026</div></div>
+<div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Fin contrat</div><div style="font-size:1rem;font-weight:700;margin-top:4px;color:#f59e0b">01/04/2027</div></div>
+<div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</div><div style="font-size:1rem;font-weight:700;margin-top:4px">50 EUR/mois</div></div></div>
+
+<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">📄 Documents</h3></div>
+<div style="padding:14px 18px"><div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px">
+<span style="font-size:1.2rem">📋</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail</div><div style="font-size:.7rem;color:#64748b">PDF original</div></div>
+<a href="../contrats/mesbah-abderahmane-bail.pdf" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">📥 Ouvrir PDF</a></div></div></div>
+
+<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">🧾 Quittances de Loyer</h3></div>
+<div style="padding:14px 18px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="border-bottom:2px solid #2a3655"><th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Periode</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Loyer</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Total</th><th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">PDF</th></tr></thead><tbody><tr style="border-bottom:1px solid #2a3655"><td style="padding:8px;font-weight:600">Avril 2026</td><td style="text-align:right;padding:8px">400 EUR</td><td style="text-align:right;padding:8px">50 EUR</td><td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">450 EUR</td><td style="text-align:center;padding:8px"><button onclick="alert('Quittance Avril 2026')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">PDF</button></td></tr></tbody></table></div></div>
+
+<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">💬 Messages du Proprietaire</h3></div>
+<div style="padding:14px 18px"><div style="color:#64748b;font-size:.82rem">Aucun message.</div></div></div>
+
+<div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - Portail Locataire Securise</div></div></div>
+
+<script>
+var _p='',_h='a16c0ab260e30b22cd06fadf9a6a30c454ddc845925cc831796b2988874d6a5a';
+async function _sha(t){var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function pk(k){if(k==='clr'){_p='';ud();document.getElementById('pe').textContent='';return}if(k==='del'){_p=_p.slice(0,-1);ud();return}if(_p.length>=4)return;_p+=k;ud();if(_p.length===4)_sha(_p).then(function(h){if(h===_h){document.getElementById('pl').style.display='none';document.getElementById('pc').style.display='block'}else{document.getElementById('pe').textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}})}
+function ud(){for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_p.length)}}
+</script></body></html>
