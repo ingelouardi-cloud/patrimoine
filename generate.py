@@ -96,7 +96,8 @@ def main():
     if '--from-app' in sys.argv:
         inp=DIR/'_input_locataires.json'
         if inp.exists():
-            app_locs=json.loads(inp.read_text())
+            raw=json.loads(inp.read_text())
+            app_locs=raw.get('locataires',raw) if isinstance(raw,dict) else raw
             locs=[]
             for a in app_locs:
                 # Find matching LOCATAIRE for bail
