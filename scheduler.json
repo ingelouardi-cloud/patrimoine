@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "tasks": [
+    {
+      "id": "generate_portails",
+      "name": "Génération portails locataires",
+      "command": "python3 generate.py",
+      "schedule": "2026-05-01 18:30",
+      "repeat": "monthly",
+      "repeat_day": 1,
+      "repeat_time": "18:30",
+      "enabled": true,
+      "last_run": null
+    }
+  ]
+}
