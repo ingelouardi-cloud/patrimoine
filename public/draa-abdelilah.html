@@ -18,7 +18,7 @@
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">💬 Messages du Proprietaire</h3></div><div style="padding:14px 18px"><div style="color:#64748b;font-size:.82rem">Aucun message.</div></div></div>
 <div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - Portail Locataire Securise</div></div></div>
 <script>
-var _p='',_h='c61bd8aaeedf8b7345d8d4b42c53af44d019e54111f7b355c21a94b5c85be5fa';
+var _p='',_h='ab254fbd275723cb1503ad9b6df84abb9acd9bf1de86c9f598f6498d6bb63a5b';
 async function _sha(t){var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function pk(k){if(k==='clr'){_p='';ud();document.getElementById('pe').textContent='';return}if(k==='del'){_p=_p.slice(0,-1);ud();return}if(_p.length>=4)return;_p+=k;ud();if(_p.length===4)_sha(_p).then(function(h){if(h===_h){document.getElementById('pl').style.display='none';document.getElementById('pc').style.display='block'}else{document.getElementById('pe').textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}})}
 function ud(){for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('f',i<_p.length)}}
