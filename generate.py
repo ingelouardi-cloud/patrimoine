@@ -379,6 +379,34 @@ function _dl(){{var t=_b(_c);var bl=new Blob([t],{{type:'text/plain'}});var a=do
 def main():
     manifest = []
 
+    # Use dynamic data from app if --from-app flag
+    if '--from-app' in sys.argv:
+        input_path = DIR / '_input_locataires.json'
+        if input_path.exists():
+            import copy
+            app_locs = json.loads(input_path.read_text())
+            locataires_to_use = []
+            for al in app_locs:
+                locataires_to_use.append({
+                    'nom': al.get('nom', ''),
+                    'prenom': al.get('prenom', ''),
+                    'bien': al.get('bien', 'EVERY'),
+                    'adresse': al.get('adresse', '3 Allée du Pourquoi Pas, 91000 Évry'),
+                    'loyer': al.get('loyer', 400),
+                    'charges': al.get('charges', 50),
+                    'date_debut': al.get('date_debut', ''),
+                    'date_fin': al.get('date_fin', ''),
+                    'duree_mois': 12,
+                    'depot': al.get('depot', al.get('loyer', 400)),
+                    'pin': al.get('portal_pin', ''),
+                    'messages': al.get('portal_messages', []),
+                })
+            input_path.unlink()
+        else:
+            locataires_to_use = LOCATAIRES
+    else:
+        locataires_to_use = LOCATAIRES
+
     # Clean old files
     for f in PUBLIC.glob('*.html'):
         if f.name != '.gitkeep':
@@ -387,10 +415,10 @@ def main():
         f.unlink()
 
     print(f"\n{'═' * 60}")
-    print(f"  🏠 GÉNÉRATION PORTAILS LOCATAIRES — {len(LOCATAIRES)} locataires")
+    print(f"  🏠 GÉNÉRATION PORTAILS LOCATAIRES — {len(locataires_to_use)} locataires")
     print(f"{'═' * 60}\n")
 
-    for loc in LOCATAIRES:
+    for loc in locataires_to_use:
         nom = loc['nom']
         prenom = loc['prenom']
         page_uuid = generate_uuid()
