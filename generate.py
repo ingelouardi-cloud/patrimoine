@@ -31,7 +31,7 @@ LOCATAIRES = [
         'loyer': 400, 'charges': 50,
         'date_debut': '2025-09-30', 'duree_mois': 9,
         'depot': 400, 'pin': '1234',
-        'bail_pdf': 'Bail-DRAA-ABDELILAH.pdf',
+        'bail_pdf': '20260422_164010_Bail-DRAA-ABDELILAH.pdf',
         'messages': []
     },
     {
@@ -40,7 +40,7 @@ LOCATAIRES = [
         'loyer': 400, 'charges': 50,
         'date_debut': '2026-04-01', 'duree_mois': 12,
         'depot': 400, 'pin': '2219',
-        'bail_pdf': 'MESBAHI-bail_colocation_chambre_v3 1.pdf',
+        'bail_pdf': '20260422_163919_MESBAHI-bail_colocation_chambre_v3 1.pdf',
         'messages': []
     },
     {
@@ -49,7 +49,7 @@ LOCATAIRES = [
         'loyer': 400, 'charges': 50,
         'date_debut': '2026-02-01', 'duree_mois': 12,
         'depot': 400, 'pin': '3456',
-        'bail_pdf': 'SAMI-Contrat bail de location chambre Bras de Fer.pdf',
+        'bail_pdf': '20260422_163919_SAMI-Contrat bail de location chambre Bras de Fer.pdf',
         'messages': []
     },
 ]
