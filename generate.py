@@ -47,7 +47,9 @@ def quittances_html(loc):
 def gen_portal(loc):
     nom,prenom=loc['nom'],loc['prenom']
     slug=(nom+'-'+prenom).lower().replace(' ','-')
-    pin=str(1000+random.randint(0,8999))
+    # Use existing PIN from app or generate new one
+    pin=loc.get('portal_pin','') or loc.get('pin','') or str(1000+random.randint(0,8999))
+    loc['pin']=pin  # Store back so manifest has it
     pin_hash=hashlib.sha256(pin.encode()).hexdigest()
     loyer,charges=loc['loyer'],loc['charges']
     total=loyer+charges
