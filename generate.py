@@ -108,7 +108,15 @@ def main():
             for a in app_locs:
                 # Find matching LOCATAIRE for bail
                 base=next((l for l in LOCATAIRES if l['nom'].lower()==(a.get('nom','').lower())),{})
-                locs.append({**base,**{k:v for k,v in a.items() if v},'loyer':a.get('loyer',400),'charges':a.get('charges',50)})
+                merged={**base,**{k:v for k,v in a.items() if v},'loyer':a.get('loyer',400),'charges':a.get('charges',50)}
+                # Map app field names to generate.py field names
+                if 'date_debut' not in merged and 'date_entree' in merged:
+                    merged['date_debut']=merged['date_entree']
+                if 'date_debut' not in merged:
+                    merged['date_debut']=''
+                if 'date_fin' not in merged:
+                    merged['date_fin']=''
+                locs.append(merged)
             inp.unlink()
         else: locs=LOCATAIRES
     else: locs=LOCATAIRES
