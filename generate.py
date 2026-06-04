@@ -13,17 +13,60 @@ CONTRATS.mkdir(exist_ok=True)
 
 MOIS = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre']
 
-LOCATAIRES = [
+LOCATAIRES_FALLBACK = [
     {'nom':'DRAA','prenom':'Abdelilah','loyer':400,'charges':50,
-     'date_debut':'2025-09-30','date_fin':'2026-06-30',
+     'date_debut':'2025-09-30','date_fin':'2026-06-30','bien':'EVRY',
      'bail':'20260422_164010_Bail-DRAA-ABDELILAH.pdf'},
     {'nom':'MESBAH','prenom':'Abderahmane','loyer':400,'charges':50,
-     'date_debut':'2026-04-01','date_fin':'2027-04-01',
+     'date_debut':'2026-04-01','date_fin':'2027-04-01','bien':'EVRY',
      'bail':'20260422_163919_MESBAHI-bail_colocation_chambre_v3 1.pdf'},
     {'nom':'EZZAHID','prenom':'Samir','loyer':400,'charges':50,
-     'date_debut':'2026-02-01','date_fin':'2027-02-01',
+     'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY',
      'bail':'20260422_163919_SAMI-Contrat bail de location chambre Bras de Fer.pdf'},
 ]
+
+# Bails PDF par nom (pour retrouver le fichier bail)
+BAIL_FILES = {
+    'DRAA': '20260422_164010_Bail-DRAA-ABDELILAH.pdf',
+    'MESBAH': '20260422_163919_MESBAHI-bail_colocation_chambre_v3 1.pdf',
+    'EZZAHID': '20260422_163919_SAMI-Contrat bail de location chambre Bras de Fer.pdf',
+}
+
+def load_from_backup():
+    """Lit les données locataires depuis le dernier backup de l'app."""
+    backup_dir = Path(os.path.expanduser('~/Downloads/patrimoine-app/backUp'))
+    if not backup_dir.exists():
+        return None
+    files = sorted(backup_dir.glob('patrimoine_*.json'))
+    if not files:
+        return None
+    try:
+        data = json.loads(files[-1].read_text())
+        locs = data.get('_location', {}).get('locataires', [])
+        actifs = [l for l in locs if l.get('actif', False)]
+        if not actifs:
+            return None
+        result = []
+        for l in actifs:
+            nom = l.get('nom', '')
+            result.append({
+                'nom': nom,
+                'prenom': l.get('prenom', ''),
+                'loyer': l.get('loyer', 400),
+                'charges': l.get('charges', 50),
+                'date_debut': l.get('date_entree', l.get('date_debut', '')),
+                'date_fin': l.get('date_fin', ''),
+                'bien': l.get('bien', 'EVRY'),
+                'bail': BAIL_FILES.get(nom.split()[0].upper(), l.get('bail', '')),
+                'contrats_historique': l.get('contrats_historique', []),
+                'portal_messages': l.get('portal_messages', []),
+                'portal_pin': l.get('portal_pin', ''),
+            })
+        print(f"  Chargé {len(result)} locataires depuis backup")
+        return result
+    except Exception as e:
+        print(f"  Erreur lecture backup: {e}")
+        return None
 
 def fmt_date(d):
     try: return datetime.strptime(d,'%Y-%m-%d').strftime('%d/%m/%Y')
@@ -143,7 +186,8 @@ function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSiz
         'contrat_url':f'https://ingelouardi-cloud.github.io/patrimoine/contrats/{slug}-bail.pdf'}
 
 def main():
-    # Read from app if --from-app
+    # Priority: 1) --from-app input file  2) backup de l'app  3) données hardcodées
+    locs = None
     if '--from-app' in sys.argv:
         inp=DIR/'_input_locataires.json'
         if inp.exists():
@@ -151,20 +195,29 @@ def main():
             app_locs=raw.get('locataires',raw) if isinstance(raw,dict) else raw
             locs=[]
             for a in app_locs:
-                # Find matching LOCATAIRE for bail
-                base=next((l for l in LOCATAIRES if l['nom'].lower()==(a.get('nom','').lower())),{})
+                base=next((l for l in LOCATAIRES_FALLBACK if l['nom'].lower()==(a.get('nom','').lower())),{})
                 merged={**base,**{k:v for k,v in a.items() if v or isinstance(v,list)},'loyer':a.get('loyer',400),'charges':a.get('charges',50)}
-                # Map app field names to generate.py field names
                 if 'date_debut' not in merged and 'date_entree' in merged:
                     merged['date_debut']=merged['date_entree']
-                if 'date_debut' not in merged:
-                    merged['date_debut']=''
-                if 'date_fin' not in merged:
-                    merged['date_fin']=''
+                if 'date_debut' not in merged: merged['date_debut']=''
+                if 'date_fin' not in merged: merged['date_fin']=''
                 locs.append(merged)
             inp.unlink()
-        else: locs=LOCATAIRES
-    else: locs=LOCATAIRES
+    # Toujours essayer le backup pour avoir les données les plus fraîches
+    backup_locs = load_from_backup()
+    if backup_locs:
+        if locs:
+            # Merge: enrichir les données app avec celles du backup (historique, messages)
+            for bl in backup_locs:
+                match = next((l for l in locs if l.get('nom','').lower().split()[0] == bl['nom'].lower().split()[0]), None)
+                if match:
+                    if not match.get('contrats_historique'): match['contrats_historique'] = bl.get('contrats_historique', [])
+                    if not match.get('portal_messages'): match['portal_messages'] = bl.get('portal_messages', [])
+                    if not match.get('bien') or match.get('bien')=='EVERY': match['bien'] = bl.get('bien', 'EVRY')
+        else:
+            locs = backup_locs
+    if not locs:
+        locs = LOCATAIRES_FALLBACK
 
     manifest=[]
     for loc in locs:
