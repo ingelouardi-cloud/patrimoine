@@ -31,17 +31,36 @@ def fmt_date(d):
 
 def quittances_html(loc):
     rows=''
+    now=datetime.now()
+    # Collecter toutes les périodes: anciens contrats + contrat actuel
+    periods=[]
+    for h in loc.get('contrats_historique',[]):
+        try:
+            h_start=datetime.strptime(h['date_debut'],'%Y-%m-%d').replace(day=1)
+            h_end=datetime.strptime(h['date_fin'],'%Y-%m-%d')
+            periods.append({'start':h_start,'end':h_end,'loyer':h.get('loyer',loc['loyer']),'charges':h.get('charges',loc['charges'])})
+        except: pass
+    # Contrat actuel
     try:
-        start=datetime.strptime(loc['date_debut'],'%Y-%m-%d').replace(day=1)
-        now=datetime.now()
-        cur=start
-        while cur<=now:
-            ml=MOIS[cur.month-1]+' '+str(cur.year)
-            deb=f'01/{cur.month:02d}/{cur.year}'
-            fin=f'{28 if cur.month==2 else 30}/{cur.month:02d}/{cur.year}'
-            rows+=f'''<tr style="border-bottom:1px solid #2a3655"><td style="padding:8px;font-weight:600">{ml}</td><td style="text-align:right;padding:8px">{loc['loyer']} EUR</td><td style="text-align:right;padding:8px">{loc['charges']} EUR</td><td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">{loc['loyer']+loc['charges']} EUR</td><td style="text-align:center;padding:8px"><button onclick="_qpdf('{ml}','{deb}','{fin}')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">PDF</button></td></tr>'''
-            cur=cur.replace(year=cur.year+1,month=1) if cur.month==12 else cur.replace(month=cur.month+1)
+        c_start=datetime.strptime(loc['date_debut'],'%Y-%m-%d').replace(day=1)
+        periods.append({'start':c_start,'end':now,'loyer':loc['loyer'],'charges':loc['charges']})
     except: pass
+    # Générer les lignes mois par mois pour chaque période
+    seen=set()
+    for p in periods:
+        cur=p['start']
+        end=min(p['end'],now)
+        loyer,charges=p['loyer'],p['charges']
+        total=loyer+charges
+        while cur<=end:
+            key=f'{cur.year}-{cur.month:02d}'
+            if key not in seen:
+                seen.add(key)
+                ml=MOIS[cur.month-1]+' '+str(cur.year)
+                deb=f'01/{cur.month:02d}/{cur.year}'
+                fin=f'{28 if cur.month==2 else 30}/{cur.month:02d}/{cur.year}'
+                rows+=f'''<tr style="border-bottom:1px solid #2a3655"><td style="padding:8px;font-weight:600">{ml}</td><td style="text-align:right;padding:8px">{loyer} EUR</td><td style="text-align:right;padding:8px">{charges} EUR</td><td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">{total} EUR</td><td style="text-align:center;padding:8px"><button onclick="_qpdf('{ml}','{deb}','{fin}')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">PDF</button></td></tr>'''
+            cur=cur.replace(year=cur.year+1,month=1) if cur.month==12 else cur.replace(month=cur.month+1)
     return rows
 
 def docs_html(loc, bail_url, dd_fmt, df_fmt):
@@ -134,7 +153,7 @@ def main():
             for a in app_locs:
                 # Find matching LOCATAIRE for bail
                 base=next((l for l in LOCATAIRES if l['nom'].lower()==(a.get('nom','').lower())),{})
-                merged={**base,**{k:v for k,v in a.items() if v},'loyer':a.get('loyer',400),'charges':a.get('charges',50)}
+                merged={**base,**{k:v for k,v in a.items() if v or isinstance(v,list)},'loyer':a.get('loyer',400),'charges':a.get('charges',50)}
                 # Map app field names to generate.py field names
                 if 'date_debut' not in merged and 'date_entree' in merged:
                     merged['date_debut']=merged['date_entree']
