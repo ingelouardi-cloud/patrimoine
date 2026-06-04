@@ -44,6 +44,31 @@ def quittances_html(loc):
     except: pass
     return rows
 
+def docs_html(loc, bail_url, dd_fmt, df_fmt):
+    """Génère la section Documents avec contrat actuel + historique."""
+    total = loc['loyer'] + loc['charges']
+    h = f'<div style="display:flex;flex-direction:column;gap:8px">'
+    h += f'<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981"><span style="font-size:1.2rem">\U0001f4cb</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail (PDF original)</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} \u20ac/mois</div></div><a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Ouvrir PDF</a><span style="padding:3px 8px;border-radius:4px;background:rgba(16,185,129,.13);color:#10b981;font-size:.68rem;font-weight:700">En cours</span></div>'
+    hist = loc.get('contrats_historique', [])
+    for i, c in enumerate(reversed(hist)):
+        c_deb = fmt_date(c.get('date_debut', '?'))
+        c_fin = fmt_date(c.get('date_fin', '?'))
+        c_total = c.get('loyer', 0) + c.get('charges', 0)
+        c_arch = c.get('date_archivage', '')
+        h += f'<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #64748b;opacity:.8"><span style="font-size:1.2rem">\U0001f4c4</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem;color:#94a3b8">Ancien contrat #{len(hist)-i}</div><div style="font-size:.7rem;color:#64748b">Du {c_deb} au {c_fin} \u2014 {c_total} \u20ac/mois</div></div><span style="font-size:.68rem;color:#64748b;padding:4px 8px;background:#0b0f19;border-radius:4px">Archiv\u00e9 {c_arch}</span></div>'
+    h += '</div>'
+    return h
+
+def messages_html(loc):
+    """Génère la section Messages."""
+    msgs = loc.get('portal_messages', [])
+    if not msgs:
+        return '<div style="color:#64748b;font-size:.82rem">Aucun message.</div>'
+    h = ''
+    for m in msgs:
+        h += f'<div style="padding:10px;background:#1a2236;border-radius:8px;margin-bottom:8px;border-left:3px solid #8b5cf6"><div style="font-size:.82rem">{m.get("text","")}</div><div style="font-size:.68rem;color:#64748b;margin-top:4px">{m.get("date","")}</div></div>'
+    return h
+
 def gen_portal(loc):
     nom,prenom=loc['nom'],loc['prenom']
     slug=(nom+'-'+prenom).lower().replace(' ','-')
@@ -55,6 +80,7 @@ def gen_portal(loc):
     pin=loc.get('portal_pin','') or loc.get('pin','') or old_entry.get('pin','') or str(1000+random.randint(0,8999))
     loc['pin']=pin  # Store back so manifest has it
     pin_hash=hashlib.sha256(pin.encode()).hexdigest()
+    bien=loc.get('bien','EVRY')
     loyer,charges=loc['loyer'],loc['charges']
     total=loyer+charges
     dd_fmt=fmt_date(loc['date_debut'])
@@ -74,16 +100,16 @@ def gen_portal(loc):
 <div id="pe" style="color:#ef4444;font-size:.82rem;min-height:20px"></div>
 <div style="display:grid;grid-template-columns:repeat(3,64px);gap:8px"><button class="pb" onclick="pk('1')">1</button><button class="pb" onclick="pk('2')">2</button><button class="pb" onclick="pk('3')">3</button><button class="pb" onclick="pk('4')">4</button><button class="pb" onclick="pk('5')">5</button><button class="pb" onclick="pk('6')">6</button><button class="pb" onclick="pk('7')">7</button><button class="pb" onclick="pk('8')">8</button><button class="pb" onclick="pk('9')">9</button><button class="pb" onclick="pk('clr')" style="font-size:.8rem">CLR</button><button class="pb" onclick="pk('0')">0</button><button class="pb" onclick="pk('del')" style="color:#ef4444">\u232b</button></div></div>
 <div id="pc" style="display:none">
-<div style="background:#111827;border-bottom:1px solid #2a3655;padding:16px 24px;display:flex;align-items:center;gap:12px"><div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">{nom[0]}</div><div><div style="font-weight:800;font-size:1rem">{nom} {prenom}</div><div style="font-size:.72rem;color:#64748b">Locataire - EVERY</div></div><div style="margin-left:auto;text-align:right"><div style="font-size:.68rem;color:#64748b">Loyer mensuel</div><div style="font-size:1.2rem;font-weight:800;color:#fbbf24">{loyer} EUR</div></div></div>
+<div style="background:#111827;border-bottom:1px solid #2a3655;padding:16px 24px;display:flex;align-items:center;gap:12px"><div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">{nom[0]}</div><div><div style="font-weight:800;font-size:1rem">{nom} {prenom}</div><div style="font-size:.72rem;color:#64748b">Locataire - {bien}</div></div><div style="margin-left:auto;text-align:right"><div style="font-size:.68rem;color:#64748b">Loyer mensuel</div><div style="font-size:1.2rem;font-weight:800;color:#fbbf24">{loyer} EUR</div></div></div>
 <div style="max-width:900px;margin:24px auto;padding:0 16px">
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
-<div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Bien</div><div style="font-size:1rem;font-weight:700;margin-top:4px">EVERY</div></div>
+<div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Bien</div><div style="font-size:1rem;font-weight:700;margin-top:4px">{bien}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Debut contrat</div><div style="font-size:1rem;font-weight:700;margin-top:4px;color:#10b981">{dd_fmt}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Fin contrat</div><div style="font-size:1rem;font-weight:700;margin-top:4px;color:#f59e0b">{df_fmt}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</div><div style="font-size:1rem;font-weight:700;margin-top:4px">{charges} EUR/mois</div></div></div>
-<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 Documents</h3></div><div style="padding:14px 18px"><div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px"><span style="font-size:1.2rem">\U0001f4cb</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail (PDF original)</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt}</div></div><a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Ouvrir PDF</a></div></div></div>
+<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 Documents</h3></div><div style="padding:14px 18px">{docs_html(loc, bail_url, dd_fmt, df_fmt)}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f9fe Quittances de Loyer</h3></div><div style="padding:14px 18px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="border-bottom:2px solid #2a3655"><th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Periode</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Loyer</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Total</th><th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">PDF</th></tr></thead><tbody>{q}</tbody></table></div></div>
-<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4ac Messages du Proprietaire</h3></div><div style="padding:14px 18px"><div style="color:#64748b;font-size:.82rem">Aucun message.</div></div></div>
+<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4ac Messages du Proprietaire</h3></div><div style="padding:14px 18px">{messages_html(loc)}</div></div>
 <div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - Portail Locataire Securise</div></div></div>
 <script>
 var _p='',_h='{pin_hash}';
