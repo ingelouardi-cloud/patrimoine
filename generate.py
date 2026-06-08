@@ -176,8 +176,8 @@ def gen_portal(loc):
     dd_fmt=fmt_date(loc['date_debut'])
     df_fmt=fmt_date(loc['date_fin'])
     bail_file=loc.get('bail','')
-    bail_src=GED/bail_file
-    if bail_src.exists():
+    bail_src=GED/bail_file if bail_file else None
+    if bail_src and bail_src.is_file():
         shutil.copy2(bail_src,CONTRATS/f'{slug}-bail.pdf')
         bail_url=f'../contrats/{slug}-bail.pdf'
     else: bail_url='#'
@@ -240,17 +240,21 @@ def main():
                 if 'date_fin' not in merged: merged['date_fin']=''
                 locs.append(merged)
             inp.unlink()
-    # Toujours essayer le backup pour avoir les données les plus fraîches
+    # Enrichir avec le backup (historique, messages, locataires manquants)
     backup_locs = load_from_backup()
     if backup_locs:
         if locs:
-            # Merge: enrichir les données app avec celles du backup (historique, messages)
             for bl in backup_locs:
-                match = next((l for l in locs if l.get('nom','').lower().split()[0] == bl['nom'].lower().split()[0]), None)
+                bl_nom=bl['nom'].lower().split()[0]
+                match = next((l for l in locs if l.get('nom','').lower().split()[0] == bl_nom), None)
                 if match:
                     if not match.get('contrats_historique'): match['contrats_historique'] = bl.get('contrats_historique', [])
                     if not match.get('portal_messages'): match['portal_messages'] = bl.get('portal_messages', [])
                     if not match.get('bien') or match.get('bien')=='EVERY': match['bien'] = bl.get('bien', 'EVRY')
+                else:
+                    # Locataire dans backup mais pas dans payload → ajouter
+                    locs.append(bl)
+                    print(f"  + Ajouté depuis backup: {bl['nom']} {bl.get('prenom','')}")
         else:
             locs = backup_locs
     if not locs:
