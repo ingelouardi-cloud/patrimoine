@@ -30,6 +30,7 @@ BAIL_FILES = {
     'DRAA': '20260422_164010_Bail-DRAA-ABDELILAH.pdf',
     'MESBAH': '20260422_163919_MESBAHI-bail_colocation_chambre_v3 1.pdf',
     'EZZAHID': '20260422_163919_SAMI-Contrat bail de location chambre Bras de Fer.pdf',
+    'MECHMOUM': '20260608_231719_nouveau document 2026-06-08 17.35.18.pdf',
 }
 
 def load_from_backup():
@@ -128,9 +129,12 @@ def docs_html(loc, bail_url, dd_fmt, df_fmt):
     h += f'<div style="display:flex;align-items:center;gap:10px">'
     h += f'<span style="font-size:1.2rem">\U0001f4cb</span>'
     h += f'<div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail actuel</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} {ds}/mois</div></div>'
-    if isMAD and bail_url != '#':
+    if isMAD:
         # MAD: ouvrir le PDF original signé
-        h += f'<a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Ouvrir PDF original</a>'
+        if bail_url != '#':
+            h += f'<a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Ouvrir PDF original</a>'
+        else:
+            h += f'<span style="font-size:.75rem;color:#64748b;padding:6px 14px">PDF non disponible</span>'
     else:
         # EUR: générer via jsPDF
         h += f'<button onclick="_contratPDF()" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;font-weight:600">\U0001f4e5 T\u00e9l\u00e9charger PDF</button>'
