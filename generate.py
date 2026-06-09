@@ -48,16 +48,23 @@ def load_from_backup():
             return None
         result = []
         for l in actifs:
-            nom = l.get('nom', '')
+            nom_raw = l.get('nom', '')
+            prenom_raw = l.get('prenom', '')
+            # Si le nom contient nom+prénom (ex: "MECHMOUM YASSINE"), séparer
+            if not prenom_raw and ' ' in nom_raw:
+                parts = nom_raw.split(' ', 1)
+                nom_raw = parts[0]
+                prenom_raw = parts[1]
             result.append({
-                'nom': nom,
-                'prenom': l.get('prenom', ''),
+                'nom': nom_raw,
+                'prenom': prenom_raw,
                 'loyer': l.get('loyer', 400),
                 'charges': l.get('charges', 50),
                 'date_debut': l.get('date_entree', l.get('date_debut', '')),
                 'date_fin': l.get('date_fin', ''),
                 'bien': l.get('bien', 'EVRY'),
-                'bail': BAIL_FILES.get(nom.split()[0].upper(), l.get('bail', '')),
+                'devise': l.get('devise', 'EUR'),
+                'bail': BAIL_FILES.get(nom_raw.split()[0].upper(), l.get('bail', '')),
                 'contrats_historique': l.get('contrats_historique', []),
                 'portal_messages': l.get('portal_messages', []),
                 'depot_garantie': l.get('depot_garantie', l.get('loyer', 400)),
