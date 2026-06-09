@@ -112,27 +112,36 @@ def quittances_html(loc):
 
 def docs_html(loc, bail_url, dd_fmt, df_fmt):
     """Génère la section Documents avec contrat actuel + historique."""
+    isMAD = loc.get('devise') == 'MAD'
+    ds = 'MAD' if isMAD else '\u20ac'
     total = loc['loyer'] + loc['charges']
     h = f'<div style="display:flex;flex-direction:column;gap:8px">'
-    # Contrat actuel — généré via jsPDF + boutons signer/commenter
+    # Contrat actuel
     h += f'<div style="padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981">'
     h += f'<div style="display:flex;align-items:center;gap:10px">'
     h += f'<span style="font-size:1.2rem">\U0001f4cb</span>'
-    h += f'<div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail actuel</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} \u20ac/mois</div></div>'
-    h += f'<button onclick="_contratPDF()" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;font-weight:600">\U0001f4e5 T\u00e9l\u00e9charger PDF</button>'
+    h += f'<div style="flex:1"><div style="font-weight:600;font-size:.82rem">Contrat de Bail actuel</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} {ds}/mois</div></div>'
+    if isMAD and bail_url != '#':
+        # MAD: ouvrir le PDF original signé
+        h += f'<a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Ouvrir PDF original</a>'
+    else:
+        # EUR: générer via jsPDF
+        h += f'<button onclick="_contratPDF()" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;font-weight:600">\U0001f4e5 T\u00e9l\u00e9charger PDF</button>'
     h += f'<span id="sign-badge" style="padding:3px 8px;border-radius:4px;background:rgba(16,185,129,.13);color:#10b981;font-size:.68rem;font-weight:700">En cours</span></div>'
-    # Boutons Signer / Commenter
-    h += f'<div id="sign-actions" style="margin-top:10px;padding-top:10px;border-top:1px solid #2a3655;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-    h += f'<button onclick="_signerContrat()" id="btn-signer" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:.8rem;cursor:pointer;font-weight:700">\u2714 Signer le contrat</button>'
-    h += f'<button onclick="document.getElementById(\'comment-zone\').style.display=\'block\'" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:.8rem;cursor:pointer;font-weight:600">\U0001f4ac Demander une modification</button>'
-    h += f'</div>'
-    # Zone commentaire (masquée par défaut)
-    h += f'<div id="comment-zone" style="display:none;margin-top:10px">'
-    h += f'<textarea id="comment-text" rows="3" placeholder="Decrivez les modifications souhaitees..." style="width:100%;background:#0b0f19;color:#e2e8f0;border:1px solid #2a3655;border-radius:8px;padding:10px;font-size:.82rem;resize:vertical"></textarea>'
-    h += f'<div style="display:flex;gap:8px;margin-top:8px">'
-    h += f'<button onclick="_envoyerCommentaire()" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-weight:600">\U0001f4e8 Envoyer au proprietaire</button>'
-    h += f'<button onclick="document.getElementById(\'comment-zone\').style.display=\'none\'" style="background:#334155;color:#e2e8f0;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer">Annuler</button>'
-    h += f'</div></div>'
+    if not isMAD:
+        # Boutons Signer / Commenter — uniquement pour France (Maroc = signature devant légalisation)
+        h += f'<div id="sign-actions" style="margin-top:10px;padding-top:10px;border-top:1px solid #2a3655;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+        h += f'<button onclick="_signerContrat()" id="btn-signer" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:.8rem;cursor:pointer;font-weight:700">\u2714 Signer le contrat</button>'
+        h += f'<button onclick="document.getElementById(\'comment-zone\').style.display=\'block\'" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:.8rem;cursor:pointer;font-weight:600">\U0001f4ac Demander une modification</button>'
+        h += f'</div>'
+        h += f'<div id="comment-zone" style="display:none;margin-top:10px">'
+        h += f'<textarea id="comment-text" rows="3" placeholder="Decrivez les modifications souhaitees..." style="width:100%;background:#0b0f19;color:#e2e8f0;border:1px solid #2a3655;border-radius:8px;padding:10px;font-size:.82rem;resize:vertical"></textarea>'
+        h += f'<div style="display:flex;gap:8px;margin-top:8px">'
+        h += f'<button onclick="_envoyerCommentaire()" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer;font-weight:600">\U0001f4e8 Envoyer au proprietaire</button>'
+        h += f'<button onclick="document.getElementById(\'comment-zone\').style.display=\'none\'" style="background:#334155;color:#e2e8f0;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer">Annuler</button>'
+        h += f'</div></div>'
+    else:
+        h += f'<div style="margin-top:8px;font-size:.75rem;color:#64748b">\U0001f4dd Signature du contrat devant la l\u00e9galisation marocaine</div>'
     h += f'</div>'
     # Anciens contrats — lien vers le bail PDF original
     hist = loc.get('contrats_historique', [])
