@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Génère les portails locataires — 2 templates: France (EUR) + Maroc (MAD)."""
-import json, os, sys, hashlib, random, shutil
+import json, os, sys, hashlib, random, shutil, base64
 from datetime import datetime
 from pathlib import Path
 
@@ -175,6 +175,133 @@ def kpis_html(bien, dd_fmt, df_fmt, charges, devise):
 <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px"><div style="font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</div><div style="font-size:1rem;font-weight:700;margin-top:4px">{charges} {ds}/mois</div></div></div>'''
 
 # ═══════════════════════════════════════════════
+# BAIL HTML COMPLET (Chambre en colocation)
+# ═══════════════════════════════════════════════
+
+def gen_bail_html(loc):
+    """Génère le bail de location meublée – Chambre en colocation en HTML complet."""
+    nom = loc.get('nom', '')
+    prenom = loc.get('prenom', '')
+    loyer = loc.get('loyer', 0)
+    charges = loc.get('charges', 0)
+    total = loyer + charges
+    depot = loc.get('depot_garantie', loc.get('depot', loyer))
+    adresse = loc.get('adresse', '3 Allée du Pourquoi Pas, 91000 Évry')
+    date_debut_raw = loc.get('date_debut', '')
+    date_fin_raw = loc.get('date_fin', '')
+    date_naissance = loc.get('date_naissance', '')
+    lieu_naissance = loc.get('lieu_naissance', '')
+
+    try:
+        start = datetime.strptime(date_debut_raw[:10], '%Y-%m-%d')
+    except:
+        start = datetime.now()
+
+    try:
+        end = datetime.strptime(date_fin_raw[:10], '%Y-%m-%d') if date_fin_raw else start.replace(year=start.year + 1)
+    except:
+        end = start.replace(year=start.year + 1)
+
+    duree_mois = round((end - start).days / 30.44)
+    if duree_mois >= 12:
+        duree_label = f"{duree_mois // 12} an{'s' if duree_mois // 12 > 1 else ''}"
+    else:
+        duree_label = f"{duree_mois} mois"
+    etudiant = duree_mois <= 9
+
+    naissance_line = ''
+    if date_naissance or lieu_naissance:
+        naissance_line = f"<p>Date et lieu de naissance : {date_naissance or '.....................'}{', né à ' + lieu_naissance if lieu_naissance else ''}</p>"
+
+    return f"""<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Bail — {nom} {prenom}</title>
+<style>
+  body{{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:32px;color:#111;font-size:10pt;line-height:1.5}}
+  h1{{text-align:center;font-size:15pt;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:20px}}
+  h2{{font-size:11pt;margin-top:18px;margin-bottom:6px;font-weight:700}}
+  p{{margin:3px 0}}
+  .parties{{border:1px solid #bbb;border-radius:4px;padding:12px 16px;margin-bottom:16px}}
+  .parties h2{{margin-top:0}}
+  .sig{{display:flex;justify-content:space-between;margin-top:40px}}
+  .sig-box{{text-align:center;width:45%}}
+  .sig-line{{border-top:1px solid #333;margin-top:48px;font-size:9pt}}
+  .legal{{font-size:8pt;color:#555;margin-top:24px;border-top:1px solid #ddd;padding-top:10px}}
+  @media print{{body{{padding:16px}}button{{display:none}}}}
+</style>
+</head>
+<body>
+<button onclick="window.print()" style="float:right;padding:8px 18px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;margin-bottom:12px">🖨️ Imprimer / Enregistrer PDF</button>
+<h1>Bail de location meublée – Chambre en colocation</h1>
+
+<p>Entre les soussignés :</p>
+<div class="parties">
+  <h2>Le bailleur (propriétaire)</h2>
+  <p>Nom / Prénom : Monsieur Yassine EL OUARDI</p>
+  <p>Adresse : 3 Allée du Pourquoi Pas, 91000 Évry</p>
+  <p>Téléphone / Email : +33 621 35 64 07 — ing.elouardi@gmail.com</p>
+</div>
+<div class="parties">
+  <h2>Et le locataire (colocataire)</h2>
+  <p>Nom / Prénom : {nom} {prenom}</p>
+  {naissance_line}
+  <p>Adresse actuelle : {adresse}</p>
+</div>
+
+<h2>1. Identification des parties</h2>
+<p><strong>Bailleur :</strong> Monsieur Yassine EL OUARDI — 3 Allée du Pourquoi Pas, 91000 Évry — 06.21.35.64.07 — ing.elouardi@gmail.com</p>
+<p><strong>Locataire :</strong> {nom} {prenom}{' — né le ' + date_naissance if date_naissance else ''}{' à ' + lieu_naissance if lieu_naissance else ''}</p>
+
+<h2>2. Désignation du logement</h2>
+<p>Type : Chambre meublée</p>
+<p>Adresse : 3 Allée du Pourquoi Pas, 91000 Évry</p>
+<p>Surface habitable : 12 m²</p>
+<p>Équipements communs : cuisine, salle de bain, WC</p>
+
+<h2>3. Durée du bail</h2>
+<p>Durée : {duree_label}, du {start.strftime('%d/%m/%Y')} au {end.strftime('%d/%m/%Y')}</p>
+<p>{'Bail spécifique étudiant, non renouvelable automatiquement.' if etudiant else 'Renouvelable par tacite reconduction.'}</p>
+
+<h2>4. Loyer et charges</h2>
+<p>Loyer mensuel : {loyer},00 € (hors charges)</p>
+<p>Charges mensuelles : {charges},00 € (forfaitaires)</p>
+<p>Total mensuel : {total},00 €</p>
+<p>Dépôt de garantie : {depot},00 €</p>
+<p>Paiement : virement bancaire, le 5 de chaque mois</p>
+
+<h2>5. Inventaire du mobilier</h2>
+<p>Le logement contient au minimum : literie avec couette/couverture, occultation des fenêtres, plaques de cuisson, four ou micro-ondes, réfrigérateur avec congélation, vaisselle, ustensiles de cuisine, table, chaises, étagères de rangement.</p>
+
+<h2>6. Obligations du locataire</h2>
+<p>Le locataire s'engage à : payer le loyer et les charges aux termes convenus, user paisiblement des locaux, ne pas transformer les lieux sans accord écrit du bailleur, permettre l'accès au bailleur pour visites de contrôle avec préavis de 24h, souscrire une assurance habitation avant l'entrée dans les lieux.</p>
+
+<h2>7. Obligations du bailleur</h2>
+<p>Le bailleur s'engage à : délivrer un logement décent en bon état d'usage et de réparation, assurer la jouissance paisible du logement, entretenir les locaux et effectuer les réparations autres que locatives.</p>
+
+<h2>8. Résiliation</h2>
+<p>Le locataire peut résilier à tout moment avec un préavis d'1 mois (meublé). Le bailleur peut résilier avec un préavis de 3 mois pour reprise personnelle ou vente, ou en cas de manquement grave du locataire.</p>
+
+<h2>9. Loi applicable</h2>
+<p>Loi n° 89-462 du 6 juillet 1989 — Loi ALUR du 24 mars 2014 — Loi ELAN du 23 novembre 2018</p>
+
+<div class="sig">
+  <div class="sig-box">
+    <p>Le bailleur</p>
+    <div class="sig-line">EL OUARDI Yassine<br>Fait à Évry, le {datetime.now().strftime('%d/%m/%Y')}</div>
+  </div>
+  <div class="sig-box">
+    <p>Le locataire</p>
+    <div class="sig-line">{nom} {prenom}<br>(Lu et approuvé)</div>
+  </div>
+</div>
+<div class="legal">Document établi conformément à la loi n° 89-462 du 6 juillet 1989 (article 21) — Conservation recommandée : 3 ans minimum après départ du logement.</div>
+</body>
+</html>"""
+
+
+# ═══════════════════════════════════════════════
 # PORTAIL FRANCE (EUR)
 # ═══════════════════════════════════════════════
 
@@ -205,18 +332,29 @@ def gen_portal_france(loc, old_manifest):
         docs += f'<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #64748b"><span style="font-size:1.2rem">\U0001f4c4</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem;color:#94a3b8">Ancien contrat #{len(loc.get("contrats_historique",[]))-i}</div><div style="font-size:.7rem;color:#64748b">Du {c_deb} au {c_fin} \u2014 {c_total} \u20ac/mois</div></div><a href="{bail_url}" target="_blank" style="background:#64748b;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 PDF</a></div>'
     docs += '</div>'
 
+    # Bail HTML complet encodé base64 (évite les problèmes d'échappement)
+    bail_html_b64 = base64.b64encode(gen_bail_html(loc).encode('utf-8')).decode('ascii')
+
     # JS fonctions France (signature, contrat PDF, quittance PDF)
     js_france = f'''
 {pin_js(pin_hash)}
 var _SIG_ACTIVE={sig_active};
+var _BAIL_URL='{bail_url}';
+var _BAIL_B64='{bail_html_b64}';
 var _EJS_KEY='{EJS_KEY}';var _EJS_SVC='{EJS_SVC}';var _EJS_TPL='{EJS_TPL}';
 try{{emailjs.init({{publicKey:_EJS_KEY}})}}catch(e){{}}
 function _sendEmail(s,b){{try{{emailjs.send(_EJS_SVC,_EJS_TPL,{{subject:s,message:b,to_email:'ing.elouardi@gmail.com'}})}}catch(e){{}}}}
-function _showSignedState(ds,ts){{var b=document.getElementById('sign-badge');b.textContent='\\u2714 Signe '+ds;b.style.background='rgba(16,185,129,.2)';b.style.color='#10b981';var a=document.getElementById('sign-actions');a.innerHTML='<div style="padding:8px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.82rem;color:#10b981">\\u2714 Contrat signe le '+ds+' a '+ts+' par {nom} {prenom}</div>';}}
+function _showSignedState(ds,ts){{var b=document.getElementById('sign-badge');b.textContent='\\u2714 Sign\u00e9 '+ds;b.style.background='rgba(16,185,129,.2)';b.style.color='#10b981';var a=document.getElementById('sign-actions');a.innerHTML='<div style="padding:8px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.82rem;color:#10b981">\\u2714 Contrat sign\u00e9 le '+ds+' \u00e0 '+ts+' par {nom} {prenom}</div>';}}
 function _checkSignedOnLoad(){{var sg=localStorage.getItem('contrat_signe_{nom}');if(sg){{var sd=new Date(sg);_showSignedState(sd.toLocaleDateString('fr-FR'),sd.toLocaleTimeString('fr-FR',{{hour:'2-digit',minute:'2-digit'}}))}}else if(!_SIG_ACTIVE){{var btn=document.getElementById('btn-signer');if(btn){{btn.disabled=true;btn.style.opacity='.4'}}}}}}
-function _signerContrat(){{if(localStorage.getItem('contrat_signe_{nom}'))return;if(!_SIG_ACTIVE){{alert('Signature non activee');return}}if(!confirm('Signer le contrat?\\n{nom} {prenom}\\n{dd_fmt} au {df_fmt}\\n{total} EUR/mois'))return;var now=new Date();var ds=now.toLocaleDateString('fr-FR');var ts=now.toLocaleTimeString('fr-FR',{{hour:'2-digit',minute:'2-digit'}});localStorage.setItem('contrat_signe_{nom}',now.toISOString());_showSignedState(ds,ts);_sendEmail('Contrat signe - {nom}','{nom} {prenom} a signe le '+ds);_contratPDF()}}
+function _signerContrat(){{if(localStorage.getItem('contrat_signe_{nom}'))return;if(!_SIG_ACTIVE){{alert('Signature non activ\u00e9e');return}}if(!confirm('Signer le contrat ?\\n{nom} {prenom}\\n{dd_fmt} au {df_fmt}\\n{total} \u20ac/mois'))return;var now=new Date();var ds=now.toLocaleDateString('fr-FR');var ts=now.toLocaleTimeString('fr-FR',{{hour:'2-digit',minute:'2-digit'}});localStorage.setItem('contrat_signe_{nom}',now.toISOString());_showSignedState(ds,ts);_sendEmail('Contrat sign\u00e9 - {nom}','{nom} {prenom} a sign\u00e9 le '+ds);_contratPDF()}}
 function _envoyerCommentaire(){{var t=document.getElementById('comment-text').value.trim();if(!t)return;document.getElementById('comment-zone').style.display='none';_sendEmail('Commentaire contrat - {nom}','{nom}: '+t)}}
-function _contratPDF(){{try{{var d=new jspdf.jsPDF();var pw=d.internal.pageSize.getWidth();var y=22;d.setFontSize(17);d.setFont('helvetica','bold');d.text('Bail de location meublee - Chambre en colocation',pw/2,y,{{align:'center'}});y+=14;d.setDrawColor(180);d.line(14,y,pw-14,y);y+=10;d.setFontSize(10);d.setFont('helvetica','normal');d.text('Bailleur: EL OUARDI Yassine - 3 Allee du Pourquoi Pas, 91000 Evry',14,y);y+=6;d.text('Locataire: {nom} {prenom}',14,y);y+=8;var arts=[['1. Duree','Du {dd_fmt} au {df_fmt}'],['2. Loyer','Loyer: {loyer} EUR | Charges: {charges} EUR | Total: {total} EUR | Depot: {depot} EUR'],['3. Obligations locataire','Payer le loyer, entretenir, assurer, restituer en bon etat'],['4. Obligations bailleur','Logement decent, jouissance paisible, quittances']];arts.forEach(function(a){{if(y>260){{d.addPage();y=20}}d.setFont('helvetica','bold');d.setFontSize(10);d.text(a[0],14,y);y+=6;d.setFont('helvetica','normal');d.setFontSize(9);var ls=d.splitTextToSize(a[1],pw-28);d.text(ls,14,y);y+=ls.length*5+6}});y+=10;d.text('Fait a Evry, le '+new Date().toLocaleDateString('fr-FR'),14,y);y+=10;d.text('Bailleur:',14,y);d.text('Locataire:',pw/2+10,y);y+=6;d.setFont('courier','bolditalic');d.setFontSize(14);d.setTextColor(0,0,100);d.text('Yassine EL OUARDI',14,y);var sg=localStorage.getItem('contrat_signe_{nom}');if(sg){{d.setTextColor(0,100,0);d.text('{nom} {prenom}',pw/2+10,y)}}d.save('Contrat_{nom}_{prenom}.pdf')}}catch(e){{alert(e.message)}}}}
+function _contratPDF(){{
+  if(_BAIL_URL&&_BAIL_URL!=='#'){{window.open(_BAIL_URL,'_blank');return;}}
+  var bytes=Uint8Array.from(atob(_BAIL_B64),function(c){{return c.charCodeAt(0);}});
+  var html=new TextDecoder('utf-8').decode(bytes);
+  var w=window.open('','_blank');
+  if(w){{w.document.write(html);w.document.close();}}
+}}
 function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSize(18);d.setFont('helvetica','bold');d.text('QUITTANCE DE LOYER',105,y,{{align:'center'}});y+=12;d.setFont('helvetica','normal');d.setFontSize(10);d.text('Bailleur: EL OUARDI Yassine',14,y);y+=5;d.text('Locataire: {nom} {prenom}',14,y);y+=5;d.text('Periode: du '+deb+' au '+fin,14,y);y+=10;d.setDrawColor(0);d.setLineWidth(1);d.rect(35,y,140,20);d.setFontSize(22);d.setFont('helvetica','bold');d.text('{total} EUR',105,y+14,{{align:'center'}});y+=28;d.setFontSize(9);d.setFont('helvetica','normal');d.text('Loyer: {loyer} EUR | Charges: {charges} EUR',14,y);y+=10;d.text('Fait a Evry, le '+new Date().toLocaleDateString('fr-FR'),14,y);d.save('Quittance_'+mois.replace(/ /g,'_')+'_{nom}.pdf')}}catch(e){{alert(e.message)}}}}'''
 
     html = f'''<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portail - {nom}</title>
