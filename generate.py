@@ -289,12 +289,12 @@ def gen_bail_html(loc):
   <div class="sig-box">
     <div class="sig-label">Le bailleur (propriétaire)</div>
     <div class="sig-area"><span class="sig-name">Yassine EL OUARDI</span></div>
-    <div class="sig-footer">EL OUARDI Yassine<br>Fait à Évry, le {datetime.now().strftime('%d/%m/%Y')}</div>
+    <div class="sig-footer">EL OUARDI Yassine<br>Fait à Évry, le {start.strftime('%d/%m/%Y')}</div>
   </div>
   <div class="sig-box">
     <div class="sig-label">Le locataire (lu et approuvé)</div>
     <div class="sig-area"><span class="sig-name">{prenom} {nom}</span></div>
-    <div class="sig-footer">{nom} {prenom}<br>Date : ................................</div>
+    <div class="sig-footer">Signé le {start.strftime('%d/%m/%Y')}</div>
   </div>
 </div>
 <div class="legal">Document établi conformément à la loi n° 89-462 du 6 juillet 1989 (article 21) — Conservation recommandée : 3 ans minimum après départ du logement.</div>
