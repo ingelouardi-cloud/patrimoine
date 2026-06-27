@@ -221,9 +221,12 @@ def gen_bail_html(loc):
   p{{margin:3px 0}}
   .parties{{border:1px solid #bbb;border-radius:4px;padding:12px 16px;margin-bottom:16px}}
   .parties h2{{margin-top:0}}
-  .sig{{display:flex;justify-content:space-between;margin-top:40px}}
+  .sig{{display:flex;justify-content:space-between;margin-top:40px;gap:20px}}
   .sig-box{{text-align:center;width:45%}}
-  .sig-line{{border-top:1px solid #333;margin-top:48px;font-size:9pt}}
+  .sig-label{{font-size:9pt;font-weight:700;margin-bottom:6px}}
+  .sig-area{{border:1px solid #ccc;border-radius:4px;height:80px;margin:8px 0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;background:#fafafa}}
+  .sig-name{{font-family:'Brush Script MT',cursive,'Segoe Script',Georgia,serif;font-size:18pt;color:#1a1a6e;font-style:italic;line-height:1}}
+  .sig-footer{{font-size:8.5pt;color:#444;margin-top:4px}}
   .legal{{font-size:8pt;color:#555;margin-top:24px;border-top:1px solid #ddd;padding-top:10px}}
   @media print{{body{{padding:16px}}button{{display:none}}}}
 </style>
@@ -284,12 +287,14 @@ def gen_bail_html(loc):
 
 <div class="sig">
   <div class="sig-box">
-    <p>Le bailleur</p>
-    <div class="sig-line">EL OUARDI Yassine<br>Fait à Évry, le {datetime.now().strftime('%d/%m/%Y')}</div>
+    <div class="sig-label">Le bailleur (propriétaire)</div>
+    <div class="sig-area"><span class="sig-name">Yassine EL OUARDI</span></div>
+    <div class="sig-footer">EL OUARDI Yassine<br>Fait à Évry, le {datetime.now().strftime('%d/%m/%Y')}</div>
   </div>
   <div class="sig-box">
-    <p>Le locataire</p>
-    <div class="sig-line">{nom} {prenom}<br>(Lu et approuvé)</div>
+    <div class="sig-label">Le locataire (lu et approuvé)</div>
+    <div class="sig-area"><span class="sig-name">{prenom} {nom}</span></div>
+    <div class="sig-footer">{nom} {prenom}<br>Date : ................................</div>
   </div>
 </div>
 <div class="legal">Document établi conformément à la loi n° 89-462 du 6 juillet 1989 (article 21) — Conservation recommandée : 3 ans minimum après départ du logement.</div>
