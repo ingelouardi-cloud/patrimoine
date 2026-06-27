@@ -25,8 +25,8 @@ LOCATAIRES_FALLBACK = [
 
 # Bails Maroc uniquement — les bails France sont générés dynamiquement depuis les données app
 BAIL_FILES = {
-    'MECHMOUM': '20260608_231719_nouveau document 2026-06-08 17.35.18.pdf',
-    'MACHMOUM': '20260608_231719_nouveau document 2026-06-08 17.35.18.pdf',
+    'MECHMOUM': '20260627_234942_Contrat-MECHMOUM YASSINE.pdf',
+    'MACHMOUM': '20260627_234942_Contrat-MECHMOUM YASSINE.pdf',
 }
 
 EJS_KEY = '73LOazWxg3Xb82Xjk'
