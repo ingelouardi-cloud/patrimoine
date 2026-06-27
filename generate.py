@@ -183,7 +183,7 @@ def gen_bail_html(loc):
     total = loyer + charges
     depot = loc.get('depot_garantie', loc.get('depot', loyer))
     adresse = loc.get('adresse', '3 Allée du Pourquoi Pas, 91000 Évry')
-    date_debut_raw = loc.get('date_debut', '')
+    date_debut_raw = loc.get('date_entree', loc.get('date_debut', ''))
     date_fin_raw = loc.get('date_fin', '')
     date_naissance = loc.get('date_naissance', '')
     lieu_naissance = loc.get('lieu_naissance', '')
