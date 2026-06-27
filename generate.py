@@ -16,20 +16,15 @@ MOIS_AR = ['يناير','فبراير','مارس','أبريل','ماي','يون�
 
 LOCATAIRES_FALLBACK = [
     {'nom':'DRAA','prenom':'Abdelilah','loyer':400,'charges':50,'devise':'EUR',
-     'date_debut':'2025-09-30','date_fin':'2026-06-30','bien':'EVRY',
-     'bail':'20260422_164010_Bail-DRAA-ABDELILAH.pdf'},
+     'date_debut':'2025-09-30','date_fin':'2026-06-30','bien':'EVRY','bail':''},
     {'nom':'MESBAH','prenom':'Abderahmane','loyer':400,'charges':50,'devise':'EUR',
-     'date_debut':'2026-04-01','date_fin':'2027-04-01','bien':'EVRY',
-     'bail':'20260422_163919_MESBAHI-bail_colocation_chambre_v3 1.pdf'},
+     'date_debut':'2026-04-01','date_fin':'2027-04-01','bien':'EVRY','bail':''},
     {'nom':'EZZAHID','prenom':'Samir','loyer':400,'charges':50,'devise':'EUR',
-     'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY',
-     'bail':'20260422_163919_SAMI-Contrat bail de location chambre Bras de Fer.pdf'},
+     'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY','bail':''},
 ]
 
+# Bails Maroc uniquement — les bails France sont générés dynamiquement depuis les données app
 BAIL_FILES = {
-    'DRAA': '20260422_164010_Bail-DRAA-ABDELILAH.pdf',
-    'MESBAH': '20260422_163919_MESBAHI-bail_colocation_chambre_v3 1.pdf',
-    'EZZAHID': '20260422_163919_SAMI-Contrat bail de location chambre Bras de Fer.pdf',
     'MECHMOUM': '20260608_231719_nouveau document 2026-06-08 17.35.18.pdf',
     'MACHMOUM': '20260608_231719_nouveau document 2026-06-08 17.35.18.pdf',
 }
@@ -128,7 +123,8 @@ def load_from_backup():
                 'date_debut': l.get('date_entree', l.get('date_debut','')),
                 'date_fin': l.get('date_fin',''),
                 'bien': l.get('bien','EVRY'),
-                'bail': BAIL_FILES.get(nom_raw.split()[0].upper(), l.get('bail','')),
+                # Pour les bails Maroc seulement — France : bail généré dynamiquement
+                'bail': BAIL_FILES.get(nom_raw.split()[0].upper(), '') if l.get('devise','EUR')=='MAD' else l.get('bail',''),
                 'depot_garantie': l.get('depot_garantie', l.get('loyer',400)),
                 'contrats_historique': l.get('contrats_historique',[]),
                 'portal_messages': l.get('portal_messages',[]),
@@ -446,7 +442,8 @@ def main():
             locs = []
             for a in app_locs:
                 base = next((l for l in LOCATAIRES_FALLBACK if l['nom'].lower()==a.get('nom','').lower()), {})
-                merged = {**base, **{k:v for k,v in a.items() if v or isinstance(v,list)}, 'loyer':a.get('loyer',400), 'charges':a.get('charges',50)}
+                # Merger: app data prend priorité — 'bail' de l'app écrase toujours (même vide)
+                merged = {**base, **{k:v for k,v in a.items() if v or isinstance(v,list)}, 'loyer':a.get('loyer',400), 'charges':a.get('charges',50), 'bail':a.get('bail','')}
                 if 'date_debut' not in merged and 'date_entree' in merged:
                     merged['date_debut'] = merged['date_entree']
                 merged.setdefault('date_debut', '')
