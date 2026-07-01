@@ -22,7 +22,8 @@ LOCATAIRES_FALLBACK = [
     {'nom':'EZZAHID','prenom':'Samir','loyer':400,'charges':50,'devise':'EUR',
      'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY','bail':''},
     {'nom':'MECHMOUM','prenom':'YASSINE','loyer':3000,'charges':100,'devise':'MAD',
-     'date_debut':'2026-07-01','date_fin':'2027-06-30','bien':'Bouskoura','bail':''},
+     'date_debut':'2026-07-01','date_fin':'2027-06-30','bien':'Bouskoura',
+     'adresse':'DYAR DKHAMA 2 GH 8 IMM 38 ETA 1 APP 5, Bouskoura','bail':''},
 ]
 
 # Bails Maroc uniquement — les bails France sont générés dynamiquement depuis les données app
@@ -393,6 +394,7 @@ def gen_portal_maroc(loc, old_manifest):
     pin = get_pin(loc, old_manifest); loc['pin'] = pin
     pin_hash = hashlib.sha256(pin.encode()).hexdigest()
     bien, loyer, charges = loc.get('bien','Maroc'), loc['loyer'], loc['charges']
+    adresse_bien = loc.get('adresse', bien)
     total = loyer + charges
     dd_fmt, df_fmt = fmt_date(loc['date_debut']), fmt_date(loc['date_fin'])
     bail_url = copy_bail(loc, s)
@@ -448,6 +450,7 @@ function _qpdf(mois,deb,fin){{
   +'<div class="row"><span class="label ar">المؤجر / Bailleur</span><span class="value fr">EL OUARDI Yassine</span></div>'
   +'<div class="row"><span class="label ar">المكتري / Locataire</span><span class="value fr">{nom} {prenom}</span></div>'
   +'<div class="row"><span class="label ar">العقار / Bien</span><span class="value fr">{bien}</span></div>'
+  +'<div class="row"><span class="label ar">العنوان / Adresse</span><span class="value fr" style="font-size:.82rem">{adresse_bien}</span></div>'
   +'<div class="row"><span class="label ar">الشهر / Mois</span><span class="value fr">'+mois+'</span></div>'
   +'<div class="row"><span class="label ar">الفترة / Période</span><span class="value fr">'+deb+' — '+fin+'</span></div>'
   +'<div class="montant-box">'
