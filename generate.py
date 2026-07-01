@@ -118,9 +118,12 @@ def load_from_backup():
             if not prenom_raw and ' ' in nom_raw:
                 parts = nom_raw.split(' ', 1)
                 nom_raw, prenom_raw = parts[0], parts[1]
+            # Override loyer/charges depuis LOCATAIRES_FALLBACK si entrée explicite
+            fb = next((f for f in LOCATAIRES_FALLBACK if f['nom'].upper()==nom_raw.split()[0].upper()), None)
             result.append({
                 'nom': nom_raw, 'prenom': prenom_raw,
-                'loyer': l.get('loyer',400), 'charges': l.get('charges',50),
+                'loyer': fb['loyer'] if fb else l.get('loyer',400),
+                'charges': fb['charges'] if fb else l.get('charges',50),
                 'devise': l.get('devise','EUR'),
                 'date_debut': l.get('date_entree', l.get('date_debut','')),
                 'date_fin': l.get('date_fin',''),
