@@ -21,6 +21,8 @@ LOCATAIRES_FALLBACK = [
      'date_debut':'2026-04-01','date_fin':'2027-04-01','bien':'EVRY','bail':''},
     {'nom':'EZZAHID','prenom':'Samir','loyer':400,'charges':50,'devise':'EUR',
      'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY','bail':''},
+    {'nom':'MECHMOUM','prenom':'YASSINE','loyer':3000,'charges':100,'devise':'MAD',
+     'date_debut':'2026-07-01','date_fin':'2027-06-30','bien':'Bouskoura','bail':''},
 ]
 
 # Bails Maroc uniquement — les bails France sont générés dynamiquement depuis les données app
@@ -408,10 +410,65 @@ def gen_portal_maroc(loc, old_manifest):
         docs += f'<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #64748b"><span style="font-size:1.2rem">\U0001f4c4</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem;color:#94a3b8">عقد قديم #{len(loc.get("contrats_historique",[]))-i}</div><div style="font-size:.7rem;color:#64748b">{c_deb} \u2014 {c_fin} \u2014 {c_total} MAD</div></div></div>'
     docs += '</div>'
 
-    # JS Maroc — quittance en arabe, pas de signature électronique
+    # JS Maroc — quittance bilingue FR+AR (HTML dans nouvelle fenêtre, jsPDF ne supporte pas l'arabe)
     js_maroc = f'''
 {pin_js(pin_hash)}
-function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSize(18);d.setFont('helvetica','bold');d.text('RECU DE LOYER / Wasl al-Kiraa',105,y,{{align:'center'}});y+=12;d.setFont('helvetica','normal');d.setFontSize(10);d.text('Bailleur: EL OUARDI Yassine',14,y);y+=5;d.text('Locataire: {nom} {prenom}',14,y);y+=5;d.text('Bien: {bien}',14,y);y+=5;d.text('Periode: du '+deb+' au '+fin,14,y);y+=10;d.setDrawColor(0);d.setLineWidth(1);d.rect(35,y,140,20);d.setFontSize(22);d.setFont('helvetica','bold');d.text('{total} MAD',105,y+14,{{align:'center'}});y+=28;d.setFontSize(9);d.setFont('helvetica','normal');d.text('Loyer: {loyer} MAD | Charges: {charges} MAD',14,y);y+=10;d.text('Fait a {bien}, le '+new Date().toLocaleDateString('fr-FR'),14,y);y+=8;d.setFontSize(7);d.text('Loi n. 67-12',14,y);d.save('Quittance_'+mois.replace(/ /g,'_')+'_{nom}.pdf')}}catch(e){{alert(e.message)}}}}'''
+function _qpdf(mois,deb,fin){{
+  var today=new Date().toLocaleDateString('fr-FR');
+  var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>وصل الكراء</title><style>'
+  +'body{{font-family:Arial,sans-serif;margin:0;padding:30px;background:#fff;color:#111;direction:rtl}}'
+  +'.page{{max-width:700px;margin:0 auto;border:2px solid #1a5276;border-radius:10px;padding:30px;position:relative}}'
+  +'.header{{text-align:center;border-bottom:3px double #1a5276;padding-bottom:18px;margin-bottom:22px}}'
+  +'.header h1{{font-size:1.6rem;color:#1a5276;margin:0 0 4px}}'
+  +'.header h2{{font-size:1.1rem;color:#555;font-weight:400;margin:0}}'
+  +'.logo{{font-size:.78rem;color:#888;margin-top:6px;letter-spacing:1px}}'
+  +'.row{{display:flex;justify-content:space-between;margin-bottom:10px;font-size:.92rem}}'
+  +'.label{{color:#555;font-weight:600;min-width:140px}}'
+  +'.value{{font-weight:700;text-align:left}}'
+  +'.montant-box{{border:3px solid #1a5276;border-radius:8px;text-align:center;padding:18px 0;margin:22px 0}}'
+  +'.montant-box .mont{{font-size:2.4rem;font-weight:900;color:#1a5276;letter-spacing:2px}}'
+  +'.montant-box .sub{{font-size:.82rem;color:#555;margin-top:4px}}'
+  +'.detail{{background:#f0f4f8;border-radius:8px;padding:12px 18px;margin-bottom:18px;font-size:.88rem;display:flex;justify-content:space-around;text-align:center}}'
+  +'.detail span{{display:block;font-size:1rem;font-weight:800;color:#1a5276}}'
+  +'.sig{{display:flex;justify-content:space-between;margin-top:30px;gap:30px}}'
+  +'.sig-box{{flex:1;text-align:center;border-top:1px solid #aaa;padding-top:10px;font-size:.82rem;color:#555}}'
+  +'.legal{{font-size:.72rem;color:#888;text-align:center;margin-top:20px;border-top:1px solid #eee;padding-top:10px}}'
+  +'.ar{{font-size:1.05em;direction:rtl}}.fr{{direction:ltr}}'
+  +'@media print{{body{{padding:10px}}.page{{border:2px solid #000}}}}'
+  +'</style></head><body><div class="page">'
+  +'<div class="header">'
+  +'<h1 class="ar">وصل الكراء</h1>'
+  +'<h2 class="fr">REÇU DE LOYER / QUITTANCE</h2>'
+  +'<div class="logo">EL OUARDI PATRIMOINE — Bailleur privé</div>'
+  +'</div>'
+  +'<div class="row"><span class="label ar">المؤجر / Bailleur</span><span class="value fr">EL OUARDI Yassine</span></div>'
+  +'<div class="row"><span class="label ar">المكتري / Locataire</span><span class="value fr">{nom} {prenom}</span></div>'
+  +'<div class="row"><span class="label ar">العقار / Bien</span><span class="value fr">{bien}</span></div>'
+  +'<div class="row"><span class="label ar">الشهر / Mois</span><span class="value fr">'+mois+'</span></div>'
+  +'<div class="row"><span class="label ar">الفترة / Période</span><span class="value fr">'+deb+' — '+fin+'</span></div>'
+  +'<div class="montant-box">'
+  +'<div class="mont">{total} MAD</div>'
+  +'<div class="sub ar">المبلغ المُؤدَّى / Montant acquitté</div>'
+  +'</div>'
+  +'<div class="detail">'
+  +'<div><div class="ar" style="font-size:.78rem;color:#555">الكراء / Loyer</div><span>{loyer} MAD</span></div>'
+  +'<div style="border-left:1px solid #ccc;border-right:1px solid #ccc;padding:0 20px"><div class="ar" style="font-size:.78rem;color:#555">الأعباء / Charges</div><span>{charges} MAD</span></div>'
+  +'<div><div class="ar" style="font-size:.78rem;color:#555">المجموع / Total</div><span style="color:#1a5276">{total} MAD</span></div>'
+  +'</div>'
+  +'<div class="row" style="margin-top:8px"><span class="label ar">التوقيع / Date</span><span class="value fr">'+today+'</span></div>'
+  +'<div style="font-size:.85rem;margin:14px 0;color:#333;text-align:center" class="ar">'
+  +'أُعطي هذا الوصل إقراراً بالأداء الكامل للمبلغ أعلاه — Ce reçu atteste du paiement intégral du montant ci-dessus.'
+  +'</div>'
+  +'<div class="sig">'
+  +'<div class="sig-box"><div class="ar">توقيع المؤجر</div><div class="fr" style="font-size:.75rem">Signature du bailleur</div><div style="margin-top:25px;font-style:italic;font-weight:700">EL OUARDI Yassine</div></div>'
+  +'<div class="sig-box"><div class="ar">توقيع المكتري</div><div class="fr" style="font-size:.75rem">Signature du locataire</div><div style="margin-top:25px;font-style:italic;font-weight:700">{nom} {prenom}</div></div>'
+  +'</div>'
+  +'<div class="legal">وفق القانون رقم 67-12 المتعلق بعقود الكراء السكني — Conformément à la Loi n° 67-12 relative aux baux d'habitation au Maroc</div>'
+  +'</div>'
+  +'<div style="text-align:center;margin-top:14px"><button onclick="window.print()" style="padding:10px 28px;background:#1a5276;color:#fff;border:none;border-radius:6px;font-size:.9rem;cursor:pointer;font-weight:700">🖨️ Imprimer / طباعة</button></div>'
+  +'</body></html>';
+  var w=window.open('','_blank');w.document.write(html);w.document.close();
+}}'''
 
     html = f'''<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة المكتري - {nom}</title>
 <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
