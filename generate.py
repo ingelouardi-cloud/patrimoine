@@ -24,6 +24,18 @@ LOCATAIRES_FALLBACK = [
     {'nom':'MECHMOUM','prenom':'YASSINE','loyer':3000,'charges':100,'devise':'MAD',
      'date_debut':'2026-07-01','date_fin':'2027-06-30','bien':'Bouskoura',
      'adresse':'DYAR DKHAMA 2 GH 8 IMM 38 ETA 1 APP 5, Bouskoura','bail':''},
+    {'nom':'OUASSOUR','prenom':'HASSAN','loyer':4600,'charges':0,'devise':'MAD',
+     'date_debut':'2026-07-06','date_fin':'2027-07-05','bien':'Nouaceur',
+     'adresse':'الطابق الثاني، الرسم رقم 166، نواصر، الدار البيضاء','bail':'',
+     'cin':'PA82874','date_naissance':'11/02/1983','lieu_naissance':'إكنيون، تنغير',
+     'etat_civil':'159/1983','telephone':'+212.661.87.11.13',
+     'depot':9200,'raqm_iqari':'T54481/63','etage':'الثاني','langue':'ar',
+     'type_bail':'habitation'},
+    {'nom':'SKIN EXPERTS','prenom':'','loyer':10500,'charges':0,'devise':'MAD',
+     'date_debut':'2026-07-06','date_fin':'2029-07-06','bien':'Bureau',
+     'adresse':'الدار البيضاء','bail':'',
+     'cin':'','telephone':'','depot':21000,
+     'langue':'ar','type_bail':'commercial'},
 ]
 
 # Bails Maroc uniquement — les bails France sont générés dynamiquement depuis les données app
