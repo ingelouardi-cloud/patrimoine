@@ -601,7 +601,7 @@ def main():
             for a in app_locs:
                 base = next((l for l in LOCATAIRES_FALLBACK if l['nom'].lower()==a.get('nom','').lower()), {})
                 # Merger: app data prend priorité — 'bail' de l'app écrase toujours (même vide)
-                merged = {**base, **{k:v for k,v in a.items() if v or isinstance(v,list)}, 'loyer':a.get('loyer',400), 'charges':a.get('charges',50), 'bail':a.get('bail','')}
+                merged = {**base, **{k:v for k,v in a.items() if v or isinstance(v,list)}, 'loyer':a.get('loyer',400), 'charges':a['charges'] if 'charges' in a else 0, 'bail':a.get('bail','')}
                 if 'date_debut' not in merged and 'date_entree' in merged:
                     merged['date_debut'] = merged['date_entree']
                 merged.setdefault('date_debut', '')
