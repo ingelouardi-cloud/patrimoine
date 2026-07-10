@@ -480,6 +480,9 @@ def gen_portal_maroc(loc, old_manifest):
     bien, loyer, charges = loc.get('bien','Maroc'), loc['loyer'], loc['charges']
     adresse_bien = loc.get('adresse', bien)
     total = loyer + charges
+    cin_loc = loc.get('cin', '..................')
+    tel_loc = loc.get('tel', '')
+    depot_loc = loc.get('depot_garantie', loc.get('depot', loyer))
     dd_fmt, df_fmt = fmt_date(loc['date_debut']), fmt_date(loc['date_fin'])
     bail_url = copy_bail(loc, s)
     q = quittances_html(loc, 'MAD')
@@ -489,7 +492,7 @@ def gen_portal_maroc(loc, old_manifest):
     docs = f'<div style="display:flex;flex-direction:column;gap:8px">'
     docs += f'<div style="padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.2rem">\U0001f4cb</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">عقد الكراء / Contrat de Bail</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} MAD/mois</div></div>'
     if bail_url != '#':
-        docs += f'<a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Ouvrir PDF original</a>'
+        docs += f'<a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Télécharger le contrat signé</a>'
     docs += f'<span style="padding:3px 8px;border-radius:4px;background:rgba(16,185,129,.13);color:#10b981;font-size:.68rem;font-weight:700">En cours</span></div>'
     docs += f'<div style="margin-top:8px;font-size:.75rem;color:#64748b">\U0001f4dd التوقيع أمام التصديق / Signature devant la l\u00e9galisation marocaine</div>'
     docs += '</div>'
