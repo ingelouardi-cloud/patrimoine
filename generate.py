@@ -118,9 +118,7 @@ def messages_html(loc):
 
 def cagnotte_html(loc):
     """Section cagnotte charges variables pour le portail locataire."""
-    cag = loc.get('cagnotte')
-    if not cag:
-        return ''
+    cag = loc.get('cagnotte') or {}
     solde_initial = cag.get('solde_initial', 0)
     mouvements = sorted(cag.get('mouvements', []), key=lambda m: m.get('date',''), reverse=True)
     total_dep = sum(m.get('montant', 0) for m in mouvements)
