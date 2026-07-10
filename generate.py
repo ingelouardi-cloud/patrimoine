@@ -19,7 +19,7 @@ LOCATAIRES_FALLBACK = [
      'date_debut':'2025-09-30','date_fin':'2026-06-30','bien':'EVRY','bail':''},
     {'nom':'MESBAH','prenom':'Abderahmane','loyer':400,'charges':50,'devise':'EUR',
      'date_debut':'2026-04-01','date_fin':'2027-04-01','bien':'EVRY','bail':''},
-    {'nom':'EZZAHID','prenom':'Samir','loyer':400,'charges':50,'devise':'EUR',
+    {'nom':'EZZAHID','prenom':'Samir','loyer':435,'charges':50,'devise':'EUR',
      'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY','bail':''},
     {'nom':'MECHMOUM','prenom':'YASSINE','loyer':3000,'charges':100,'devise':'MAD',
      'date_debut':'2026-07-01','date_fin':'2027-06-30','bien':'Bouskoura',
