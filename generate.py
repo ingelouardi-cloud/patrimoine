@@ -26,7 +26,7 @@ LOCATAIRES_FALLBACK = [
      'adresse':'DYAR DKHAMA 2 GH 8 IMM 38 ETA 1 APP 5, Bouskoura','bail':''},
     {'nom':'OUASSOUR','prenom':'HASSAN','loyer':4600,'charges':0,'devise':'MAD',
      'date_debut':'2026-07-06','date_fin':'2027-07-05','bien':'Nouaceur',
-     'adresse':'الطابق الثاني، الرسم رقم 166، نواصر، الدار البيضاء','bail':'',
+     'adresse':'الطابق الثاني، الرسم رقم 166، لوطيس تيسير، نواصر، الدار البيضاء','bail':'',
      'cin':'PA82874','date_naissance':'11/02/1983','lieu_naissance':'إكنيون، تنغير',
      'etat_civil':'159/1983','telephone':'+212.661.87.11.13',
      'depot':9200,'raqm_iqari':'T54481/63','etage':'الثاني','langue':'ar',
