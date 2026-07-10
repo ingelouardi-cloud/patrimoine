@@ -207,7 +207,7 @@ def load_from_backup():
             result.append({
                 'nom': nom_raw, 'prenom': prenom_raw,
                 'loyer': fb['loyer'] if fb else l.get('loyer',400),
-                'charges': fb['charges'] if fb else l.get('charges',50),
+                'charges': fb['charges'] if fb else l.get('charges', 0),
                 'adresse': fb.get('adresse','') if fb and fb.get('adresse') else l.get('adresse',''),
                 'devise': l.get('devise','EUR'),
                 'date_debut': l.get('date_entree', l.get('date_debut','')),
