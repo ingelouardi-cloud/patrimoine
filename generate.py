@@ -116,6 +116,79 @@ def messages_html(loc):
         return '<div style="color:#64748b;font-size:.82rem">Aucun message.</div>'
     return ''.join(f'<div style="padding:10px;background:#1a2236;border-radius:8px;margin-bottom:8px;border-left:3px solid #8b5cf6"><div style="font-size:.82rem">{m.get("text","")}</div><div style="font-size:.68rem;color:#64748b;margin-top:4px">{m.get("date","")}</div></div>' for m in msgs)
 
+def cagnotte_html(loc):
+    """Section cagnotte charges variables pour le portail locataire."""
+    cag = loc.get('cagnotte')
+    if not cag:
+        return ''
+    solde_initial = cag.get('solde_initial', 0)
+    mouvements = sorted(cag.get('mouvements', []), key=lambda m: m.get('date',''), reverse=True)
+    total_dep = sum(m.get('montant', 0) for m in mouvements)
+    solde_restant = solde_initial - total_dep
+    couleur = '#10b981' if solde_restant >= 0 else '#ef4444'
+    pct = max(0, min(100, int(solde_restant / solde_initial * 100))) if solde_initial > 0 else 0
+
+    rows = ''
+    running = solde_initial
+    for m in reversed(mouvements):  # chrono pour calcul solde
+        running -= m.get('montant', 0)
+    running = solde_initial
+    for m in mouvements:
+        running_after = running - m.get('montant', 0)
+        justif_html = ''
+        if m.get('justif'):
+            justif_html = f'<br><img src="{m["justif"]}" style="max-width:120px;max-height:80px;object-fit:cover;border-radius:6px;margin-top:6px;border:1px solid #2a3655;cursor:pointer" onclick="window.open(this.src,\'_blank\')" title="Voir justificatif">'
+        rows += f'''<tr style="border-bottom:1px solid #2a3655">
+          <td style="padding:8px 10px;font-size:.78rem;color:#94a3b8">{m.get('date','')}</td>
+          <td style="padding:8px 10px;font-size:.82rem">{m.get('libelle','')}{justif_html}</td>
+          <td style="padding:8px 10px;font-size:.82rem;text-align:right;color:#ef4444;font-weight:700">−{int(m.get('montant',0)):,} DH</td>
+          <td style="padding:8px 10px;font-size:.82rem;text-align:right;color:{("#10b981" if running_after>=0 else "#ef4444")};font-weight:700">{int(running_after):,} DH</td>
+        </tr>'''
+        running = running_after
+
+    if not mouvements:
+        rows = '<tr><td colspan="4" style="padding:12px;text-align:center;color:#64748b;font-size:.78rem">لا توجد استهلاكات — Aucune imputation</td></tr>'
+
+    return f'''<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #f59e0b">
+  <div style="padding:14px 18px;border-bottom:1px solid #2a3655;display:flex;justify-content:space-between;align-items:center">
+    <h3 style="font-size:.9rem;font-weight:700;margin:0">💰 صندوق الأعباء / Cagnotte Charges Variables</h3>
+  </div>
+  <div style="padding:14px 18px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <div style="flex:1;min-width:130px;background:#1a2236;border-radius:8px;padding:12px;border-left:3px solid #3b82f6">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px">رصيد البداية / Dépôt initial</div>
+        <div style="font-size:1.2rem;font-weight:800;color:#3b82f6">{int(solde_initial):,} DH</div>
+      </div>
+      <div style="flex:1;min-width:130px;background:#1a2236;border-radius:8px;padding:12px;border-left:3px solid #ef4444">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px">مجموع الاستهلاك / Total consommé</div>
+        <div style="font-size:1.2rem;font-weight:800;color:#ef4444">{int(total_dep):,} DH</div>
+      </div>
+      <div style="flex:1;min-width:130px;background:#1a2236;border-radius:8px;padding:12px;border-left:3px solid {couleur}">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px">الرصيد المتبقي / Solde restant</div>
+        <div style="font-size:1.2rem;font-weight:800;color:{couleur}">{int(solde_restant):,} DH</div>
+        <div style="margin-top:6px;background:#0f172a;border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:{pct}%;background:{couleur};border-radius:4px"></div></div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+      <thead><tr style="border-bottom:2px solid #2a3655">
+        <th style="padding:8px 10px;text-align:left;font-size:.65rem;color:#64748b;text-transform:uppercase">التاريخ / Date</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.65rem;color:#64748b;text-transform:uppercase">البيان / Libellé</th>
+        <th style="padding:8px 10px;text-align:right;font-size:.65rem;color:#64748b;text-transform:uppercase">المبلغ / Montant</th>
+        <th style="padding:8px 10px;text-align:right;font-size:.65rem;color:#64748b;text-transform:uppercase">الرصيد / Solde</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #2a3655;background:#1a2236">
+          <td style="padding:8px 10px;font-size:.78rem;color:#94a3b8">—</td>
+          <td style="padding:8px 10px;font-size:.82rem;font-weight:700;color:#3b82f6">رصيد البداية / Cagnotte initiale</td>
+          <td style="padding:8px 10px;text-align:right;color:#3b82f6;font-weight:700">+{int(solde_initial):,} DH</td>
+          <td style="padding:8px 10px;text-align:right;color:#3b82f6;font-weight:700">{int(solde_initial):,} DH</td>
+        </tr>
+        {rows}
+      </tbody>
+    </table>
+  </div>
+</div>'''
+
 def load_from_backup():
     backup_dir = Path(os.path.expanduser('~/Downloads/patrimoine-app/backUp'))
     if not backup_dir.exists(): return None
@@ -412,6 +485,7 @@ def gen_portal_maroc(loc, old_manifest):
     dd_fmt, df_fmt = fmt_date(loc['date_debut']), fmt_date(loc['date_fin'])
     bail_url = copy_bail(loc, s)
     q = quittances_html(loc, 'MAD')
+    cag_block = cagnotte_html(loc)
 
     # Documents section — PDF original + mention légalisation
     docs = f'<div style="display:flex;flex-direction:column;gap:8px">'
@@ -501,7 +575,7 @@ function _qpdf(mois,deb,fin){{
 {kpis_html(bien, dd_fmt, df_fmt, charges, 'MAD')}
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 الوثائق / Documents</h3></div><div style="padding:14px 18px">{docs}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f9fe وصولات الكراء / Quittances</h3></div><div style="padding:14px 18px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="border-bottom:2px solid #2a3655"><th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b">Periode</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Loyer</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Charges</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Total</th><th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b">PDF</th></tr></thead><tbody>{q}</tbody></table></div></div>
-<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4ac رسائل المالك / Messages</h3></div><div style="padding:14px 18px">{messages_html(loc)}</div></div>
+{cag_block}<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4ac رسائل المالك / Messages</h3></div><div style="padding:14px 18px">{messages_html(loc)}</div></div>
 <div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - بوابة المكتري</div></div></div>
 <script>{js_maroc}</script></body></html>'''
 
