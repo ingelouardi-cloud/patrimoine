@@ -202,13 +202,13 @@ def load_from_backup():
             if not prenom_raw and ' ' in nom_raw:
                 parts = nom_raw.split(' ', 1)
                 nom_raw, prenom_raw = parts[0], parts[1]
-            # Override loyer/charges/adresse depuis LOCATAIRES_FALLBACK si entrée explicite
-            fb = next((f for f in LOCATAIRES_FALLBACK if f['nom'].upper()==nom_raw.split()[0].upper()), None)
+            # Fallback uniquement pour les champs absents du backup (l'app a toujours priorité)
+            fb = next((f for f in LOCATAIRES_FALLBACK if f['nom'].upper()==nom_raw.split()[0].upper()), {})
             result.append({
                 'nom': nom_raw, 'prenom': prenom_raw,
-                'loyer': fb['loyer'] if fb else l.get('loyer',400),
-                'charges': fb['charges'] if fb else l.get('charges', 0),
-                'adresse': fb.get('adresse','') if fb and fb.get('adresse') else l.get('adresse',''),
+                'loyer': l.get('loyer') or fb.get('loyer', 400),
+                'charges': l['charges'] if 'charges' in l else fb.get('charges', 0),
+                'adresse': l.get('adresse') or fb.get('adresse',''),
                 'devise': l.get('devise','EUR'),
                 'date_debut': l.get('date_entree', l.get('date_debut','')),
                 'date_fin': l.get('date_fin',''),
