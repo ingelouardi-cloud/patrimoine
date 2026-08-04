@@ -116,9 +116,15 @@ def messages_html(loc):
         return '<div style="color:#64748b;font-size:.82rem">Aucun message.</div>'
     return ''.join(f'<div style="padding:10px;background:#1a2236;border-radius:8px;margin-bottom:8px;border-left:3px solid #8b5cf6"><div style="font-size:.82rem">{m.get("text","")}</div><div style="font-size:.68rem;color:#64748b;margin-top:4px">{m.get("date","")}</div></div>' for m in msgs)
 
+def _fmt_dh(v):
+    """Formate un montant DH : entier si rond, 1 décimale sinon."""
+    return f'{v:,.1f}' if v != int(v) else f'{int(v):,}'
+
 def cagnotte_html(loc):
     """Section cagnotte charges variables pour le portail locataire."""
     cag = loc.get('cagnotte') or {}
+    if not cag or (not cag.get('solde_initial') and not cag.get('mouvements')):
+        return ''
     solde_initial = cag.get('solde_initial', 0)
     mouvements = sorted(cag.get('mouvements', []), key=lambda m: m.get('date',''), reverse=True)
     total_dep = sum(m.get('montant', 0) for m in mouvements)
@@ -128,9 +134,6 @@ def cagnotte_html(loc):
 
     rows = ''
     running = solde_initial
-    for m in reversed(mouvements):  # chrono pour calcul solde
-        running -= m.get('montant', 0)
-    running = solde_initial
     for m in mouvements:
         running_after = running - m.get('montant', 0)
         justif_html = ''
@@ -139,8 +142,8 @@ def cagnotte_html(loc):
         rows += f'''<tr style="border-bottom:1px solid #2a3655">
           <td style="padding:8px 10px;font-size:.78rem;color:#94a3b8">{m.get('date','')}</td>
           <td style="padding:8px 10px;font-size:.82rem">{m.get('libelle','')}{justif_html}</td>
-          <td style="padding:8px 10px;font-size:.82rem;text-align:right;color:#ef4444;font-weight:700">−{int(m.get('montant',0)):,} DH</td>
-          <td style="padding:8px 10px;font-size:.82rem;text-align:right;color:{("#10b981" if running_after>=0 else "#ef4444")};font-weight:700">{int(running_after):,} DH</td>
+          <td style="padding:8px 10px;font-size:.82rem;text-align:right;color:#ef4444;font-weight:700">−{_fmt_dh(m.get('montant',0))} DH</td>
+          <td style="padding:8px 10px;font-size:.82rem;text-align:right;color:{("#10b981" if running_after>=0 else "#ef4444")};font-weight:700">{_fmt_dh(running_after)} DH</td>
         </tr>'''
         running = running_after
 
@@ -155,15 +158,15 @@ def cagnotte_html(loc):
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
       <div style="flex:1;min-width:130px;background:#1a2236;border-radius:8px;padding:12px;border-left:3px solid #3b82f6">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px">رصيد البداية / Dépôt initial</div>
-        <div style="font-size:1.2rem;font-weight:800;color:#3b82f6">{int(solde_initial):,} DH</div>
+        <div style="font-size:1.2rem;font-weight:800;color:#3b82f6">{_fmt_dh(solde_initial)} DH</div>
       </div>
       <div style="flex:1;min-width:130px;background:#1a2236;border-radius:8px;padding:12px;border-left:3px solid #ef4444">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px">مجموع الاستهلاك / Total consommé</div>
-        <div style="font-size:1.2rem;font-weight:800;color:#ef4444">{int(total_dep):,} DH</div>
+        <div style="font-size:1.2rem;font-weight:800;color:#ef4444">{_fmt_dh(total_dep)} DH</div>
       </div>
       <div style="flex:1;min-width:130px;background:#1a2236;border-radius:8px;padding:12px;border-left:3px solid {couleur}">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px">الرصيد المتبقي / Solde restant</div>
-        <div style="font-size:1.2rem;font-weight:800;color:{couleur}">{int(solde_restant):,} DH</div>
+        <div style="font-size:1.2rem;font-weight:800;color:{couleur}">{_fmt_dh(solde_restant)} DH</div>
         <div style="margin-top:6px;background:#0f172a;border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:{pct}%;background:{couleur};border-radius:4px"></div></div>
       </div>
     </div>
@@ -220,6 +223,7 @@ def load_from_backup():
                 'portal_messages': l.get('portal_messages',[]),
                 'portal_pin': l.get('portal_pin',''),
                 'signature_active': l.get('signature_active', True),
+                'cagnotte': l.get('cagnotte'),
             })
         print(f"  Chargé {len(result)} locataires depuis backup")
         return result
@@ -619,6 +623,7 @@ def main():
                 if match:
                     if not match.get('contrats_historique'): match['contrats_historique'] = bl.get('contrats_historique',[])
                     if not match.get('portal_messages'): match['portal_messages'] = bl.get('portal_messages',[])
+                    if not match.get('cagnotte') and bl.get('cagnotte'): match['cagnotte'] = bl['cagnotte']
                 else:
                     locs.append(bl)
                     print(f"  + Ajouté depuis backup: {bl['nom']}")
