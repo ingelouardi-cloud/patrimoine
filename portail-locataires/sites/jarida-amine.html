@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail Locataire — JARIDA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{bg:'#0b0f19',s1:'#111827',s2:'#1a2236',bd:'#2a3655',acc:'#3b82f6',green:'#10b981',gold:'#fbbf24',red:'#ef4444',txt:'#e2e8f0',mut:'#64748b'}}}}</script>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh}
+  .pin-overlay{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+  .pin-dot{width:14px;height:14px;border-radius:50%;background:#243050;border:2px solid #2a3655;transition:.2s}
+  .pin-dot.filled{background:#3b82f6}
+  .pin-btn{width:64px;height:52px;border-radius:10px;background:#1a2236;border:1px solid #2a3655;color:#e2e8f0;font-size:1.2rem;font-weight:600;cursor:pointer}
+  .pin-btn:hover{background:#243050;border-color:#3b82f6}
+</style>
+</head>
+<body>
+
+<!-- ═══ PIN LOCK ═══ -->
+<div id="pin-lock" class="pin-overlay">
+  <div style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">🏠</div>
+    <h1 style="font-size:1.4rem;color:#fbbf24;margin:0">Portail Locataire</h1>
+    <p style="color:#64748b;font-size:.85rem;margin-top:4px">Entrez votre code PIN</p>
+  </div>
+  <div style="display:flex;gap:12px;margin:8px 0" id="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div id="pin-error" style="color:#ef4444;font-size:.82rem;min-height:20px"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,64px);gap:8px">
+    <button class="pin-btn" onclick="pinKey('1')">1</button><button class="pin-btn" onclick="pinKey('2')">2</button><button class="pin-btn" onclick="pinKey('3')">3</button>
+    <button class="pin-btn" onclick="pinKey('4')">4</button><button class="pin-btn" onclick="pinKey('5')">5</button><button class="pin-btn" onclick="pinKey('6')">6</button>
+    <button class="pin-btn" onclick="pinKey('7')">7</button><button class="pin-btn" onclick="pinKey('8')">8</button><button class="pin-btn" onclick="pinKey('9')">9</button>
+    <button class="pin-btn" onclick="pinKey('clr')" style="font-size:.8rem">CLR</button><button class="pin-btn" onclick="pinKey('0')">0</button><button class="pin-btn" onclick="pinKey('del')" style="color:#ef4444">⌫</button>
+  </div>
+</div>
+
+<!-- ═══ CONTENU (masqué tant que PIN non validé) ═══ -->
+<div id="portal-content" style="display:none">
+
+  <!-- HEADER -->
+  <div style="background:#111827;border-bottom:1px solid #2a3655;padding:16px 24px;display:flex;align-items:center;gap:12px">
+    <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">J</div>
+    <div>
+      <div style="font-weight:800;font-size:1rem">JARIDA Amine</div>
+      <div style="font-size:.72rem;color:#64748b">Locataire — Nouaceur 1er étage</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:.68rem;color:#64748b">Loyer mensuel</div>
+      <div style="font-size:1.2rem;font-weight:800;color:#fbbf24">4400 €</div>
+    </div>
+  </div>
+
+  <!-- INFOS CONTRAT -->
+  <div style="max-width:900px;margin:24px auto;padding:0 16px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Bien</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px">Nouaceur 1er étage</div>
+      </div>
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Début contrat</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px;color:#10b981">03/08/2026</div>
+      </div>
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Fin contrat</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px;color:#f59e0b">03/08/2027</div>
+      </div>
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Charges</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px">0 €/mois</div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655;display:flex;align-items:center;justify-content:space-between">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">📄 Documents</h3>
+      </div>
+      <div style="padding:14px 18px" id="documents-list">
+        
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981">
+          <span style="font-size:1.2rem">📋</span>
+          <div style="flex:1"><div style="font-weight:600;font-size:.82rem">Bail de location meublée — Chambre en colocation</div><div style="font-size:.7rem;color:#64748b">Du 03/08/2026 au 03/08/2027</div></div>
+          <button onclick="downloadBail()" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;font-weight:600">📥 Ouvrir Bail</button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- QUITTANCES -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">🧾 Quittances de Loyer</h3>
+      </div>
+      <div style="padding:14px 18px">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead>
+            <tr style="border-bottom:2px solid #2a3655">
+              <th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Période</th>
+              <th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Loyer</th>
+              <th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</th>
+              <th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Total</th>
+              <th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Télécharger</th>
+            </tr>
+          </thead>
+          <tbody id="quittances-tbody">
+            <tr style="border-bottom:1px solid #2a3655">
+            <td style="padding:8px;font-weight:600">Août 2026</td>
+            <td style="text-align:right;padding:8px">4400 MAD</td>
+            <td style="text-align:right;padding:8px">0 MAD</td>
+            <td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">4400 MAD</td>
+            <td style="text-align:center;padding:8px">
+              <button onclick="downloadQuittance('Août 2026','QUITTANCE DE LOYER\n═══════════════════════════\n\nBailleur: EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\nLocataire: JARIDA Amine\nAdresse du bien: Nouaceur 1er étage\n\nPériode: Août 2026\n\nLoyer: 4400,00 MAD\nProvision pour charges: 0,00 MAD\n━━━━━━━━━━━━━━━━━━━━━━\nTOTAL: 4400,00 MAD\n\nLa présente quittance est délivrée sous réserve de\ntous les versements antérieurs qui resteraient dus.\n\nFait à Évry, le 24/09/2026\n\nEL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\n(Article 21 de la Loi n° 89-462 du 6 juillet 1989)')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">📄 PDF</button>
+            </td>
+          </tr>
+<tr style="border-bottom:1px solid #2a3655">
+            <td style="padding:8px;font-weight:600">Septembre 2026</td>
+            <td style="text-align:right;padding:8px">4400 MAD</td>
+            <td style="text-align:right;padding:8px">0 MAD</td>
+            <td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">4400 MAD</td>
+            <td style="text-align:center;padding:8px">
+              <button onclick="downloadQuittance('Septembre 2026','QUITTANCE DE LOYER\n═══════════════════════════\n\nBailleur: EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\nLocataire: JARIDA Amine\nAdresse du bien: Nouaceur 1er étage\n\nPériode: Septembre 2026\n\nLoyer: 4400,00 MAD\nProvision pour charges: 0,00 MAD\n━━━━━━━━━━━━━━━━━━━━━━\nTOTAL: 4400,00 MAD\n\nLa présente quittance est délivrée sous réserve de\ntous les versements antérieurs qui resteraient dus.\n\nFait à Évry, le 24/09/2026\n\nEL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\n(Article 21 de la Loi n° 89-462 du 6 juillet 1989)')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">📄 PDF</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MESSAGES PROPRIÉTAIRE -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">💬 Messages du Propriétaire</h3>
+      </div>
+      <div style="padding:14px 18px" id="messages-section">
+        <div style="color:#64748b;font-size:.82rem;padding:8px">Aucun message pour le moment.</div>
+      </div>
+    </div>
+
+    <!-- CAGNOTTE CHARGES VARIABLES -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #f59e0b">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">💰 صندوق الأعباء — Cagnotte Charges Variables</h3>
+      </div>
+      <div style="padding:14px 18px" id="cagnotte-section">
+        {{CAGNOTTE}}
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">
+      EL OUARDI PATRIMOINE — Portail Locataire Sécurisé<br>
+      EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ PIN LOCK ═══
+var _pin='';
+var _correctPin='9959';
+function pinKey(k){
+  if(k==='clr'){_pin='';updateDots();document.getElementById('pin-error').textContent='';return;}
+  if(k==='del'){_pin=_pin.slice(0,-1);updateDots();return;}
+  if(_pin.length>=4)return;
+  _pin+=k;
+  updateDots();
+  if(_pin.length===4){
+    if(_pin===_correctPin){
+      document.getElementById('pin-lock').style.display='none';
+      document.getElementById('portal-content').style.display='block';
+    } else {
+      document.getElementById('pin-error').textContent='Code PIN incorrect';
+      _pin='';
+      setTimeout(updateDots,300);
+    }
+  }
+}
+function updateDots(){for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_pin.length);}}
+</script>
+
+
+<script>
+var _bailB64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImZyIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPHRpdGxlPkJhaWwg4oCUIEpBUklEQSBBbWluZTwvdGl0bGU+CjxzdHlsZT4KICBib2R5e2ZvbnQtZmFtaWx5OidTZWdvZSBVSScsQXJpYWwsc2Fucy1zZXJpZjttYXgtd2lkdGg6ODAwcHg7bWFyZ2luOjAgYXV0bztwYWRkaW5nOjMycHg7Y29sb3I6IzExMTtmb250LXNpemU6MTBwdDtsaW5lLWhlaWdodDoxLjV9CiAgaDF7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udC1zaXplOjE1cHQ7Ym9yZGVyLWJvdHRvbToycHggc29saWQgIzMzMztwYWRkaW5nLWJvdHRvbTo4cHg7bWFyZ2luLWJvdHRvbToyMHB4fQogIGgye2ZvbnQtc2l6ZToxMXB0O21hcmdpbi10b3A6MThweDttYXJnaW4tYm90dG9tOjZweDtmb250LXdlaWdodDo3MDB9CiAgcHttYXJnaW46M3B4IDB9CiAgLnBhcnRpZXN7Ym9yZGVyOjFweCBzb2xpZCAjYmJiO2JvcmRlci1yYWRpdXM6NHB4O3BhZGRpbmc6MTJweCAxNnB4O21hcmdpbi1ib3R0b206MTZweH0KICAucGFydGllcyBoMnttYXJnaW4tdG9wOjB9CiAgLnNpZ3tkaXNwbGF5OmZsZXg7anVzdGlmeS1jb250ZW50OnNwYWNlLWJldHdlZW47bWFyZ2luLXRvcDo0MHB4O2dhcDoyMHB4fQogIC5zaWctYm94e3RleHQtYWxpZ246Y2VudGVyO3dpZHRoOjQ1JX0KICAuc2lnLWxhYmVse2ZvbnQtc2l6ZTo5cHQ7Zm9udC13ZWlnaHQ6NzAwO21hcmdpbi1ib3R0b206NnB4fQogIC5zaWctYXJlYXtib3JkZXI6MXB4IHNvbGlkICNjY2M7Ym9yZGVyLXJhZGl1czo0cHg7aGVpZ2h0OjgwcHg7bWFyZ2luOjhweCAwO2Rpc3BsYXk6ZmxleDthbGlnbi1pdGVtczpmbGV4LWVuZDtqdXN0aWZ5LWNvbnRlbnQ6Y2VudGVyO3BhZGRpbmctYm90dG9tOjhweDtiYWNrZ3JvdW5kOiNmYWZhZmF9CiAgLnNpZy1uYW1le2ZvbnQtZmFtaWx5OidCcnVzaCBTY3JpcHQgTVQnLGN1cnNpdmUsJ1NlZ29lIFNjcmlwdCcsR2VvcmdpYSxzZXJpZjtmb250LXNpemU6MThwdDtjb2xvcjojMWExYTZlO2ZvbnQtc3R5bGU6aXRhbGljO2xpbmUtaGVpZ2h0OjF9CiAgLnNpZy1mb290ZXJ7Zm9udC1zaXplOjguNXB0O2NvbG9yOiM0NDQ7bWFyZ2luLXRvcDo0cHh9CiAgLmxlZ2Fse2ZvbnQtc2l6ZTo4cHQ7Y29sb3I6IzU1NTttYXJnaW4tdG9wOjI0cHg7Ym9yZGVyLXRvcDoxcHggc29saWQgI2RkZDtwYWRkaW5nLXRvcDoxMHB4fQogIEBtZWRpYSBwcmludHtib2R5e3BhZGRpbmc6MTZweH1idXR0b257ZGlzcGxheTpub25lfX0KPC9zdHlsZT4KPC9oZWFkPgo8Ym9keT4KPGJ1dHRvbiBvbmNsaWNrPSJ3aW5kb3cucHJpbnQoKSIgc3R5bGU9ImZsb2F0OnJpZ2h0O3BhZGRpbmc6OHB4IDE4cHg7YmFja2dyb3VuZDojM2I4MmY2O2NvbG9yOiNmZmY7Ym9yZGVyOm5vbmU7Ym9yZGVyLXJhZGl1czo2cHg7Zm9udC13ZWlnaHQ6NzAwO2N1cnNvcjpwb2ludGVyO21hcmdpbi1ib3R0b206MTJweCI+8J+WqO+4jyBJbXByaW1lciAvIEVucmVnaXN0cmVyIFBERjwvYnV0dG9uPgo8aDE+QmFpbCBkZSBsb2NhdGlvbiBtZXVibMOpZSDigJMgQ2hhbWJyZSBlbiBjb2xvY2F0aW9uPC9oMT4KCjxwPkVudHJlIGxlcyBzb3Vzc2lnbsOpcyA6PC9wPgo8ZGl2IGNsYXNzPSJwYXJ0aWVzIj4KICA8aDI+TGUgYmFpbGxldXIgKHByb3ByacOpdGFpcmUpPC9oMj4KICA8cD5Ob20gLyBQcsOpbm9tIDogTW9uc2lldXIgWWFzc2luZSBFTCBPVUFSREk8L3A+CiAgPHA+QWRyZXNzZSA6IDMgQWxsw6llIGR1IFBvdXJxdW9pIFBhcywgOTEwMDAgw4l2cnk8L3A+CiAgPHA+VMOpbMOpcGhvbmUgLyBFbWFpbCA6ICszMyA2MjEgMzUgNjQgMDcg4oCUIGluZy5lbG91YXJkaUBnbWFpbC5jb208L3A+CjwvZGl2Pgo8ZGl2IGNsYXNzPSJwYXJ0aWVzIj4KICA8aDI+RXQgbGUgbG9jYXRhaXJlIChjb2xvY2F0YWlyZSk8L2gyPgogIDxwPk5vbSAvIFByw6lub20gOiBKQVJJREEgQW1pbmU8L3A+CiAgCiAgPHA+QWRyZXNzZSBhY3R1ZWxsZSA6IE5vdWFjZXVyLCAxZXIgw6l0YWdlLCBUNTQ0ODEvNjM8L3A+CjwvZGl2PgoKPGgyPjEuIElkZW50aWZpY2F0aW9uIGRlcyBwYXJ0aWVzPC9oMj4KPHA+PHN0cm9uZz5CYWlsbGV1ciA6PC9zdHJvbmc+IE1vbnNpZXVyIFlhc3NpbmUgRUwgT1VBUkRJIOKAlCAzIEFsbMOpZSBkdSBQb3VycXVvaSBQYXMsIDkxMDAwIMOJdnJ5IOKAlCAwNi4yMS4zNS42NC4wNyDigJQgaW5nLmVsb3VhcmRpQGdtYWlsLmNvbTwvcD4KPHA+PHN0cm9uZz5Mb2NhdGFpcmUgOjwvc3Ryb25nPiBKQVJJREEgQW1pbmU8L3A+Cgo8aDI+Mi4gRMOpc2lnbmF0aW9uIGR1IGxvZ2VtZW50PC9oMj4KPHA+VHlwZSA6IENoYW1icmUgbWV1YmzDqWU8L3A+CjxwPkFkcmVzc2UgOiAzIEFsbMOpZSBkdSBQb3VycXVvaSBQYXMsIDkxMDAwIMOJdnJ5PC9wPgo8cD5TdXJmYWNlIGhhYml0YWJsZSA6IDEyIG3CsjwvcD4KPHA+w4lxdWlwZW1lbnRzIGNvbW11bnMgOiBjdWlzaW5lLCBzYWxsZSBkZSBiYWluLCBXQzwvcD4KCjxoMj4zLiBEdXLDqWUgZHUgYmFpbDwvaDI+CjxwPkR1csOpZSA6IDEgYW4sIGR1IDAzLzA4LzIwMjYgYXUgMDMvMDgvMjAyNzwvcD4KPHA+UmVub3V2ZWxhYmxlIHBhciB0YWNpdGUgcmVjb25kdWN0aW9uLjwvcD4KCjxoMj40LiBMb3llciBldCBjaGFyZ2VzPC9oMj4KPHA+TG95ZXIgbWVuc3VlbCA6IDQ0MDAsMDAgTUFEIChob3JzIGNoYXJnZXMpPC9wPgo8cD5DaGFyZ2VzIG1lbnN1ZWxsZXMgOiAwLDAwIE1BRCAoZm9yZmFpdGFpcmVzKTwvcD4KPHA+VG90YWwgbWVuc3VlbCA6IDQ0MDAsMDAgTUFEPC9wPgo8cD5Ew6lww7R0IGRlIGdhcmFudGllIDogNDQwMCwwMCBNQUQ8L3A+CjxwPlBhaWVtZW50IDogdmlyZW1lbnQgYmFuY2FpcmUsIGxlIDUgZGUgY2hhcXVlIG1vaXM8L3A+Cgo8aDI+NS4gSW52ZW50YWlyZSBkdSBtb2JpbGllcjwvaDI+CjxwPkxlIGxvZ2VtZW50IGNvbnRpZW50IGF1IG1pbmltdW0gOiBsaXRlcmllIGF2ZWMgY291ZXR0ZS9jb3V2ZXJ0dXJlLCBvY2N1bHRhdGlvbiBkZXMgZmVuw6p0cmVzLCBwbGFxdWVzIGRlIGN1aXNzb24sIGZvdXIgb3UgbWljcm8tb25kZXMsIHLDqWZyaWfDqXJhdGV1ciBhdmVjIGNvbmfDqWxhdGlvbiwgdmFpc3NlbGxlLCB1c3RlbnNpbGVzIGRlIGN1aXNpbmUsIHRhYmxlLCBjaGFpc2VzLCDDqXRhZ8OocmVzIGRlIHJhbmdlbWVudC48L3A+Cgo8aDI+Ni4gT2JsaWdhdGlvbnMgZHUgbG9jYXRhaXJlPC9oMj4KPHA+TGUgbG9jYXRhaXJlIHMnZW5nYWdlIMOgIDogcGF5ZXIgbGUgbG95ZXIgZXQgbGVzIGNoYXJnZXMgYXV4IHRlcm1lcyBjb252ZW51cywgdXNlciBwYWlzaWJsZW1lbnQgZGVzIGxvY2F1eCwgbmUgcGFzIHRyYW5zZm9ybWVyIGxlcyBsaWV1eCBzYW5zIGFjY29yZCDDqWNyaXQgZHUgYmFpbGxldXIsIHBlcm1ldHRyZSBsJ2FjY8OocyBhdSBiYWlsbGV1ciBwb3VyIHZpc2l0ZXMgZGUgY29udHLDtGxlIGF2ZWMgcHLDqWF2aXMgZGUgMjRoLCBzb3VzY3JpcmUgdW5lIGFzc3VyYW5jZSBoYWJpdGF0aW9uIGF2YW50IGwnZW50csOpZSBkYW5zIGxlcyBsaWV1eC48L3A+Cgo8aDI+Ny4gT2JsaWdhdGlvbnMgZHUgYmFpbGxldXI8L2gyPgo8cD5MZSBiYWlsbGV1ciBzJ2VuZ2FnZSDDoCA6IGTDqWxpdnJlciB1biBsb2dlbWVudCBkw6ljZW50IGVuIGJvbiDDqXRhdCBkJ3VzYWdlIGV0IGRlIHLDqXBhcmF0aW9uLCBhc3N1cmVyIGxhIGpvdWlzc2FuY2UgcGFpc2libGUgZHUgbG9nZW1lbnQsIGVudHJldGVuaXIgbGVzIGxvY2F1eCBldCBlZmZlY3R1ZXIgbGVzIHLDqXBhcmF0aW9ucyBhdXRyZXMgcXVlIGxvY2F0aXZlcy48L3A+Cgo8aDI+OC4gUsOpc2lsaWF0aW9uPC9oMj4KPHA+TGUgbG9jYXRhaXJlIHBldXQgcsOpc2lsaWVyIMOgIHRvdXQgbW9tZW50IGF2ZWMgdW4gcHLDqWF2aXMgZCcxIG1vaXMgKG1ldWJsw6kpLiBMZSBiYWlsbGV1ciBwZXV0IHLDqXNpbGllciBhdmVjIHVuIHByw6lhdmlzIGRlIDMgbW9pcyBwb3VyIHJlcHJpc2UgcGVyc29ubmVsbGUgb3UgdmVudGUsIG91IGVuIGNhcyBkZSBtYW5xdWVtZW50IGdyYXZlIGR1IGxvY2F0YWlyZS48L3A+Cgo8aDI+OS4gTG9pIGFwcGxpY2FibGU8L2gyPgo8cD5Mb2kgbsKwIDg5LTQ2MiBkdSA2IGp1aWxsZXQgMTk4OSDigJQgTG9pIEFMVVIgZHUgMjQgbWFycyAyMDE0IOKAlCBMb2kgRUxBTiBkdSAyMyBub3ZlbWJyZSAyMDE4PC9wPgoKPGRpdiBjbGFzcz0ic2lnIj4KICA8ZGl2IGNsYXNzPSJzaWctYm94Ij4KICAgIDxkaXYgY2xhc3M9InNpZy1sYWJlbCI+TGUgYmFpbGxldXIgKHByb3ByacOpdGFpcmUpPC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJzaWctYXJlYSI+PHNwYW4gY2xhc3M9InNpZy1uYW1lIj5ZYXNzaW5lIEVMIE9VQVJESTwvc3Bhbj48L2Rpdj4KICAgIDxkaXYgY2xhc3M9InNpZy1mb290ZXIiPkVMIE9VQVJESSBZYXNzaW5lPGJyPkZhaXQgw6Agw4l2cnksIGxlIDAzLzA4LzIwMjY8L2Rpdj4KICA8L2Rpdj4KICA8ZGl2IGNsYXNzPSJzaWctYm94Ij4KICAgIDxkaXYgY2xhc3M9InNpZy1sYWJlbCI+TGUgbG9jYXRhaXJlIChsdSBldCBhcHByb3V2w6kpPC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJzaWctYXJlYSI+PHNwYW4gY2xhc3M9InNpZy1uYW1lIj5BbWluZSBKQVJJREE8L3NwYW4+PC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJzaWctZm9vdGVyIj5TaWduw6kgbGUgMDMvMDgvMjAyNjwvZGl2PgogIDwvZGl2Pgo8L2Rpdj4KPGRpdiBjbGFzcz0ibGVnYWwiPkRvY3VtZW50IMOpdGFibGkgY29uZm9ybcOpbWVudCDDoCBsYSBsb2kgbsKwIDg5LTQ2MiBkdSA2IGp1aWxsZXQgMTk4OSAoYXJ0aWNsZSAyMSkg4oCUIENvbnNlcnZhdGlvbiByZWNvbW1hbmTDqWUgOiAzIGFucyBtaW5pbXVtIGFwcsOocyBkw6lwYXJ0IGR1IGxvZ2VtZW50LjwvZGl2Pgo8L2JvZHk+CjwvaHRtbD4=";
+function downloadBail() {
+  var bytes = Uint8Array.from(atob(_bailB64), function(c){return c.charCodeAt(0);});
+  var html = new TextDecoder('utf-8').decode(bytes);
+  var w = window.open('','_blank');
+  if(w) { w.document.write(html); w.document.close(); }
+  else {
+    var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Bail_JARIDA_Amine.html';
+    a.click();
+  }
+}
+function downloadQuittance(mois, content) {
+  var text = content.replace(/\\n/g, '\n');
+  var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Quittance_' + mois.replace(/ /g, '_') + '.txt';
+  a.click();
+}
+</script>
+</body>
+</html>

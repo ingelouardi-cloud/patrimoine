@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail Locataire — MACHMOUM</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{bg:'#0b0f19',s1:'#111827',s2:'#1a2236',bd:'#2a3655',acc:'#3b82f6',green:'#10b981',gold:'#fbbf24',red:'#ef4444',txt:'#e2e8f0',mut:'#64748b'}}}}</script>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0f19;color:#e2e8f0;margin:0;min-height:100vh}
+  .pin-overlay{position:fixed;inset:0;z-index:9999;background:#0b0f19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+  .pin-dot{width:14px;height:14px;border-radius:50%;background:#243050;border:2px solid #2a3655;transition:.2s}
+  .pin-dot.filled{background:#3b82f6}
+  .pin-btn{width:64px;height:52px;border-radius:10px;background:#1a2236;border:1px solid #2a3655;color:#e2e8f0;font-size:1.2rem;font-weight:600;cursor:pointer}
+  .pin-btn:hover{background:#243050;border-color:#3b82f6}
+</style>
+</head>
+<body>
+
+<!-- ═══ PIN LOCK ═══ -->
+<div id="pin-lock" class="pin-overlay">
+  <div style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">🏠</div>
+    <h1 style="font-size:1.4rem;color:#fbbf24;margin:0">Portail Locataire</h1>
+    <p style="color:#64748b;font-size:.85rem;margin-top:4px">Entrez votre code PIN</p>
+  </div>
+  <div style="display:flex;gap:12px;margin:8px 0" id="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div id="pin-error" style="color:#ef4444;font-size:.82rem;min-height:20px"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,64px);gap:8px">
+    <button class="pin-btn" onclick="pinKey('1')">1</button><button class="pin-btn" onclick="pinKey('2')">2</button><button class="pin-btn" onclick="pinKey('3')">3</button>
+    <button class="pin-btn" onclick="pinKey('4')">4</button><button class="pin-btn" onclick="pinKey('5')">5</button><button class="pin-btn" onclick="pinKey('6')">6</button>
+    <button class="pin-btn" onclick="pinKey('7')">7</button><button class="pin-btn" onclick="pinKey('8')">8</button><button class="pin-btn" onclick="pinKey('9')">9</button>
+    <button class="pin-btn" onclick="pinKey('clr')" style="font-size:.8rem">CLR</button><button class="pin-btn" onclick="pinKey('0')">0</button><button class="pin-btn" onclick="pinKey('del')" style="color:#ef4444">⌫</button>
+  </div>
+</div>
+
+<!-- ═══ CONTENU (masqué tant que PIN non validé) ═══ -->
+<div id="portal-content" style="display:none">
+
+  <!-- HEADER -->
+  <div style="background:#111827;border-bottom:1px solid #2a3655;padding:16px 24px;display:flex;align-items:center;gap:12px">
+    <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">M</div>
+    <div>
+      <div style="font-weight:800;font-size:1rem">MACHMOUM Yassine</div>
+      <div style="font-size:.72rem;color:#64748b">Locataire — Bouskoura</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:.68rem;color:#64748b">Loyer mensuel</div>
+      <div style="font-size:1.2rem;font-weight:800;color:#fbbf24">3100 €</div>
+    </div>
+  </div>
+
+  <!-- INFOS CONTRAT -->
+  <div style="max-width:900px;margin:24px auto;padding:0 16px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Bien</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px">Bouskoura</div>
+      </div>
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Début contrat</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px;color:#10b981">01/07/2026</div>
+      </div>
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Fin contrat</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px;color:#f59e0b">01/07/2027</div>
+      </div>
+      <div style="background:#111827;border:1px solid #2a3655;border-radius:10px;padding:14px">
+        <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Charges</div>
+        <div style="font-size:1rem;font-weight:700;margin-top:4px">0 €/mois</div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655;display:flex;align-items:center;justify-content:space-between">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">📄 Documents</h3>
+      </div>
+      <div style="padding:14px 18px" id="documents-list">
+        
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981">
+          <span style="font-size:1.2rem">📋</span>
+          <div style="flex:1"><div style="font-weight:600;font-size:.82rem">Bail de location meublée — Chambre en colocation</div><div style="font-size:.7rem;color:#64748b">Du 01/07/2026 au 01/07/2027</div></div>
+          <button onclick="downloadBail()" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;font-weight:600">📥 Ouvrir Bail</button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- QUITTANCES -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">🧾 Quittances de Loyer</h3>
+      </div>
+      <div style="padding:14px 18px">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead>
+            <tr style="border-bottom:2px solid #2a3655">
+              <th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Période</th>
+              <th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Loyer</th>
+              <th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Charges</th>
+              <th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Total</th>
+              <th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Télécharger</th>
+            </tr>
+          </thead>
+          <tbody id="quittances-tbody">
+            <tr style="border-bottom:1px solid #2a3655">
+            <td style="padding:8px;font-weight:600">Juillet 2026</td>
+            <td style="text-align:right;padding:8px">3100 MAD</td>
+            <td style="text-align:right;padding:8px">0 MAD</td>
+            <td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">3100 MAD</td>
+            <td style="text-align:center;padding:8px">
+              <button onclick="downloadQuittance('Juillet 2026','QUITTANCE DE LOYER\n═══════════════════════════\n\nBailleur: EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\nLocataire: MACHMOUM Yassine\nAdresse du bien: Bouskoura, Casablanca\n\nPériode: Juillet 2026\n\nLoyer: 3100,00 MAD\nProvision pour charges: 0,00 MAD\n━━━━━━━━━━━━━━━━━━━━━━\nTOTAL: 3100,00 MAD\n\nLa présente quittance est délivrée sous réserve de\ntous les versements antérieurs qui resteraient dus.\n\nFait à Évry, le 24/09/2026\n\nEL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\n(Article 21 de la Loi n° 89-462 du 6 juillet 1989)')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">📄 PDF</button>
+            </td>
+          </tr>
+<tr style="border-bottom:1px solid #2a3655">
+            <td style="padding:8px;font-weight:600">Août 2026</td>
+            <td style="text-align:right;padding:8px">3100 MAD</td>
+            <td style="text-align:right;padding:8px">0 MAD</td>
+            <td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">3100 MAD</td>
+            <td style="text-align:center;padding:8px">
+              <button onclick="downloadQuittance('Août 2026','QUITTANCE DE LOYER\n═══════════════════════════\n\nBailleur: EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\nLocataire: MACHMOUM Yassine\nAdresse du bien: Bouskoura, Casablanca\n\nPériode: Août 2026\n\nLoyer: 3100,00 MAD\nProvision pour charges: 0,00 MAD\n━━━━━━━━━━━━━━━━━━━━━━\nTOTAL: 3100,00 MAD\n\nLa présente quittance est délivrée sous réserve de\ntous les versements antérieurs qui resteraient dus.\n\nFait à Évry, le 24/09/2026\n\nEL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\n(Article 21 de la Loi n° 89-462 du 6 juillet 1989)')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">📄 PDF</button>
+            </td>
+          </tr>
+<tr style="border-bottom:1px solid #2a3655">
+            <td style="padding:8px;font-weight:600">Septembre 2026</td>
+            <td style="text-align:right;padding:8px">3100 MAD</td>
+            <td style="text-align:right;padding:8px">0 MAD</td>
+            <td style="text-align:right;padding:8px;font-weight:700;color:#fbbf24">3100 MAD</td>
+            <td style="text-align:center;padding:8px">
+              <button onclick="downloadQuittance('Septembre 2026','QUITTANCE DE LOYER\n═══════════════════════════\n\nBailleur: EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\nLocataire: MACHMOUM Yassine\nAdresse du bien: Bouskoura, Casablanca\n\nPériode: Septembre 2026\n\nLoyer: 3100,00 MAD\nProvision pour charges: 0,00 MAD\n━━━━━━━━━━━━━━━━━━━━━━\nTOTAL: 3100,00 MAD\n\nLa présente quittance est délivrée sous réserve de\ntous les versements antérieurs qui resteraient dus.\n\nFait à Évry, le 24/09/2026\n\nEL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry\n\n(Article 21 de la Loi n° 89-462 du 6 juillet 1989)')" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">📄 PDF</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MESSAGES PROPRIÉTAIRE -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">💬 Messages du Propriétaire</h3>
+      </div>
+      <div style="padding:14px 18px" id="messages-section">
+        <div style="color:#64748b;font-size:.82rem;padding:8px">Aucun message pour le moment.</div>
+      </div>
+    </div>
+
+    <!-- CAGNOTTE CHARGES VARIABLES -->
+    <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #f59e0b">
+      <div style="padding:14px 18px;border-bottom:1px solid #2a3655">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">💰 صندوق الأعباء — Cagnotte Charges Variables</h3>
+      </div>
+      <div style="padding:14px 18px" id="cagnotte-section">
+        {{CAGNOTTE}}
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">
+      EL OUARDI PATRIMOINE — Portail Locataire Sécurisé<br>
+      EL OUARDI Yassine — 3 Allée du Pourquoi Pas, 91000 Évry
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ PIN LOCK ═══
+var _pin='';
+var _correctPin='4485';
+function pinKey(k){
+  if(k==='clr'){_pin='';updateDots();document.getElementById('pin-error').textContent='';return;}
+  if(k==='del'){_pin=_pin.slice(0,-1);updateDots();return;}
+  if(_pin.length>=4)return;
+  _pin+=k;
+  updateDots();
+  if(_pin.length===4){
+    if(_pin===_correctPin){
+      document.getElementById('pin-lock').style.display='none';
+      document.getElementById('portal-content').style.display='block';
+    } else {
+      document.getElementById('pin-error').textContent='Code PIN incorrect';
+      _pin='';
+      setTimeout(updateDots,300);
+    }
+  }
+}
+function updateDots(){for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<_pin.length);}}
+</script>
+
+
+<script>
+var _bailB64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImZyIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPHRpdGxlPkJhaWwg4oCUIE1BQ0hNT1VNIFlhc3NpbmU8L3RpdGxlPgo8c3R5bGU+CiAgYm9keXtmb250LWZhbWlseTonU2Vnb2UgVUknLEFyaWFsLHNhbnMtc2VyaWY7bWF4LXdpZHRoOjgwMHB4O21hcmdpbjowIGF1dG87cGFkZGluZzozMnB4O2NvbG9yOiMxMTE7Zm9udC1zaXplOjEwcHQ7bGluZS1oZWlnaHQ6MS41fQogIGgxe3RleHQtYWxpZ246Y2VudGVyO2ZvbnQtc2l6ZToxNXB0O2JvcmRlci1ib3R0b206MnB4IHNvbGlkICMzMzM7cGFkZGluZy1ib3R0b206OHB4O21hcmdpbi1ib3R0b206MjBweH0KICBoMntmb250LXNpemU6MTFwdDttYXJnaW4tdG9wOjE4cHg7bWFyZ2luLWJvdHRvbTo2cHg7Zm9udC13ZWlnaHQ6NzAwfQogIHB7bWFyZ2luOjNweCAwfQogIC5wYXJ0aWVze2JvcmRlcjoxcHggc29saWQgI2JiYjtib3JkZXItcmFkaXVzOjRweDtwYWRkaW5nOjEycHggMTZweDttYXJnaW4tYm90dG9tOjE2cHh9CiAgLnBhcnRpZXMgaDJ7bWFyZ2luLXRvcDowfQogIC5zaWd7ZGlzcGxheTpmbGV4O2p1c3RpZnktY29udGVudDpzcGFjZS1iZXR3ZWVuO21hcmdpbi10b3A6NDBweDtnYXA6MjBweH0KICAuc2lnLWJveHt0ZXh0LWFsaWduOmNlbnRlcjt3aWR0aDo0NSV9CiAgLnNpZy1sYWJlbHtmb250LXNpemU6OXB0O2ZvbnQtd2VpZ2h0OjcwMDttYXJnaW4tYm90dG9tOjZweH0KICAuc2lnLWFyZWF7Ym9yZGVyOjFweCBzb2xpZCAjY2NjO2JvcmRlci1yYWRpdXM6NHB4O2hlaWdodDo4MHB4O21hcmdpbjo4cHggMDtkaXNwbGF5OmZsZXg7YWxpZ24taXRlbXM6ZmxleC1lbmQ7anVzdGlmeS1jb250ZW50OmNlbnRlcjtwYWRkaW5nLWJvdHRvbTo4cHg7YmFja2dyb3VuZDojZmFmYWZhfQogIC5zaWctbmFtZXtmb250LWZhbWlseTonQnJ1c2ggU2NyaXB0IE1UJyxjdXJzaXZlLCdTZWdvZSBTY3JpcHQnLEdlb3JnaWEsc2VyaWY7Zm9udC1zaXplOjE4cHQ7Y29sb3I6IzFhMWE2ZTtmb250LXN0eWxlOml0YWxpYztsaW5lLWhlaWdodDoxfQogIC5zaWctZm9vdGVye2ZvbnQtc2l6ZTo4LjVwdDtjb2xvcjojNDQ0O21hcmdpbi10b3A6NHB4fQogIC5sZWdhbHtmb250LXNpemU6OHB0O2NvbG9yOiM1NTU7bWFyZ2luLXRvcDoyNHB4O2JvcmRlci10b3A6MXB4IHNvbGlkICNkZGQ7cGFkZGluZy10b3A6MTBweH0KICBAbWVkaWEgcHJpbnR7Ym9keXtwYWRkaW5nOjE2cHh9YnV0dG9ue2Rpc3BsYXk6bm9uZX19Cjwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CjxidXR0b24gb25jbGljaz0id2luZG93LnByaW50KCkiIHN0eWxlPSJmbG9hdDpyaWdodDtwYWRkaW5nOjhweCAxOHB4O2JhY2tncm91bmQ6IzNiODJmNjtjb2xvcjojZmZmO2JvcmRlcjpub25lO2JvcmRlci1yYWRpdXM6NnB4O2ZvbnQtd2VpZ2h0OjcwMDtjdXJzb3I6cG9pbnRlcjttYXJnaW4tYm90dG9tOjEycHgiPvCflqjvuI8gSW1wcmltZXIgLyBFbnJlZ2lzdHJlciBQREY8L2J1dHRvbj4KPGgxPkJhaWwgZGUgbG9jYXRpb24gbWV1YmzDqWUg4oCTIENoYW1icmUgZW4gY29sb2NhdGlvbjwvaDE+Cgo8cD5FbnRyZSBsZXMgc291c3NpZ27DqXMgOjwvcD4KPGRpdiBjbGFzcz0icGFydGllcyI+CiAgPGgyPkxlIGJhaWxsZXVyIChwcm9wcmnDqXRhaXJlKTwvaDI+CiAgPHA+Tm9tIC8gUHLDqW5vbSA6IE1vbnNpZXVyIFlhc3NpbmUgRUwgT1VBUkRJPC9wPgogIDxwPkFkcmVzc2UgOiAzIEFsbMOpZSBkdSBQb3VycXVvaSBQYXMsIDkxMDAwIMOJdnJ5PC9wPgogIDxwPlTDqWzDqXBob25lIC8gRW1haWwgOiArMzMgNjIxIDM1IDY0IDA3IOKAlCBpbmcuZWxvdWFyZGlAZ21haWwuY29tPC9wPgo8L2Rpdj4KPGRpdiBjbGFzcz0icGFydGllcyI+CiAgPGgyPkV0IGxlIGxvY2F0YWlyZSAoY29sb2NhdGFpcmUpPC9oMj4KICA8cD5Ob20gLyBQcsOpbm9tIDogTUFDSE1PVU0gWWFzc2luZTwvcD4KICAKICA8cD5BZHJlc3NlIGFjdHVlbGxlIDogQm91c2tvdXJhPC9wPgo8L2Rpdj4KCjxoMj4xLiBJZGVudGlmaWNhdGlvbiBkZXMgcGFydGllczwvaDI+CjxwPjxzdHJvbmc+QmFpbGxldXIgOjwvc3Ryb25nPiBNb25zaWV1ciBZYXNzaW5lIEVMIE9VQVJESSDigJQgMyBBbGzDqWUgZHUgUG91cnF1b2kgUGFzLCA5MTAwMCDDiXZyeSDigJQgMDYuMjEuMzUuNjQuMDcg4oCUIGluZy5lbG91YXJkaUBnbWFpbC5jb208L3A+CjxwPjxzdHJvbmc+TG9jYXRhaXJlIDo8L3N0cm9uZz4gTUFDSE1PVU0gWWFzc2luZTwvcD4KCjxoMj4yLiBEw6lzaWduYXRpb24gZHUgbG9nZW1lbnQ8L2gyPgo8cD5UeXBlIDogQ2hhbWJyZSBtZXVibMOpZTwvcD4KPHA+QWRyZXNzZSA6IDMgQWxsw6llIGR1IFBvdXJxdW9pIFBhcywgOTEwMDAgw4l2cnk8L3A+CjxwPlN1cmZhY2UgaGFiaXRhYmxlIDogMTIgbcKyPC9wPgo8cD7DiXF1aXBlbWVudHMgY29tbXVucyA6IGN1aXNpbmUsIHNhbGxlIGRlIGJhaW4sIFdDPC9wPgoKPGgyPjMuIER1csOpZSBkdSBiYWlsPC9oMj4KPHA+RHVyw6llIDogMSBhbiwgZHUgMDEvMDcvMjAyNiBhdSAzMC8wNi8yMDI3PC9wPgo8cD5SZW5vdXZlbGFibGUgcGFyIHRhY2l0ZSByZWNvbmR1Y3Rpb24uPC9wPgoKPGgyPjQuIExveWVyIGV0IGNoYXJnZXM8L2gyPgo8cD5Mb3llciBtZW5zdWVsIDogMzEwMCwwMCBNQUQgKGhvcnMgY2hhcmdlcyk8L3A+CjxwPkNoYXJnZXMgbWVuc3VlbGxlcyA6IDAsMDAgTUFEIChmb3JmYWl0YWlyZXMpPC9wPgo8cD5Ub3RhbCBtZW5zdWVsIDogMzEwMCwwMCBNQUQ8L3A+CjxwPkTDqXDDtHQgZGUgZ2FyYW50aWUgOiAzMTAwLDAwIE1BRDwvcD4KPHA+UGFpZW1lbnQgOiB2aXJlbWVudCBiYW5jYWlyZSwgbGUgNSBkZSBjaGFxdWUgbW9pczwvcD4KCjxoMj41LiBJbnZlbnRhaXJlIGR1IG1vYmlsaWVyPC9oMj4KPHA+TGUgbG9nZW1lbnQgY29udGllbnQgYXUgbWluaW11bSA6IGxpdGVyaWUgYXZlYyBjb3VldHRlL2NvdXZlcnR1cmUsIG9jY3VsdGF0aW9uIGRlcyBmZW7DqnRyZXMsIHBsYXF1ZXMgZGUgY3Vpc3NvbiwgZm91ciBvdSBtaWNyby1vbmRlcywgcsOpZnJpZ8OpcmF0ZXVyIGF2ZWMgY29uZ8OpbGF0aW9uLCB2YWlzc2VsbGUsIHVzdGVuc2lsZXMgZGUgY3Vpc2luZSwgdGFibGUsIGNoYWlzZXMsIMOpdGFnw6hyZXMgZGUgcmFuZ2VtZW50LjwvcD4KCjxoMj42LiBPYmxpZ2F0aW9ucyBkdSBsb2NhdGFpcmU8L2gyPgo8cD5MZSBsb2NhdGFpcmUgcydlbmdhZ2Ugw6AgOiBwYXllciBsZSBsb3llciBldCBsZXMgY2hhcmdlcyBhdXggdGVybWVzIGNvbnZlbnVzLCB1c2VyIHBhaXNpYmxlbWVudCBkZXMgbG9jYXV4LCBuZSBwYXMgdHJhbnNmb3JtZXIgbGVzIGxpZXV4IHNhbnMgYWNjb3JkIMOpY3JpdCBkdSBiYWlsbGV1ciwgcGVybWV0dHJlIGwnYWNjw6hzIGF1IGJhaWxsZXVyIHBvdXIgdmlzaXRlcyBkZSBjb250csO0bGUgYXZlYyBwcsOpYXZpcyBkZSAyNGgsIHNvdXNjcmlyZSB1bmUgYXNzdXJhbmNlIGhhYml0YXRpb24gYXZhbnQgbCdlbnRyw6llIGRhbnMgbGVzIGxpZXV4LjwvcD4KCjxoMj43LiBPYmxpZ2F0aW9ucyBkdSBiYWlsbGV1cjwvaDI+CjxwPkxlIGJhaWxsZXVyIHMnZW5nYWdlIMOgIDogZMOpbGl2cmVyIHVuIGxvZ2VtZW50IGTDqWNlbnQgZW4gYm9uIMOpdGF0IGQndXNhZ2UgZXQgZGUgcsOpcGFyYXRpb24sIGFzc3VyZXIgbGEgam91aXNzYW5jZSBwYWlzaWJsZSBkdSBsb2dlbWVudCwgZW50cmV0ZW5pciBsZXMgbG9jYXV4IGV0IGVmZmVjdHVlciBsZXMgcsOpcGFyYXRpb25zIGF1dHJlcyBxdWUgbG9jYXRpdmVzLjwvcD4KCjxoMj44LiBSw6lzaWxpYXRpb248L2gyPgo8cD5MZSBsb2NhdGFpcmUgcGV1dCByw6lzaWxpZXIgw6AgdG91dCBtb21lbnQgYXZlYyB1biBwcsOpYXZpcyBkJzEgbW9pcyAobWV1YmzDqSkuIExlIGJhaWxsZXVyIHBldXQgcsOpc2lsaWVyIGF2ZWMgdW4gcHLDqWF2aXMgZGUgMyBtb2lzIHBvdXIgcmVwcmlzZSBwZXJzb25uZWxsZSBvdSB2ZW50ZSwgb3UgZW4gY2FzIGRlIG1hbnF1ZW1lbnQgZ3JhdmUgZHUgbG9jYXRhaXJlLjwvcD4KCjxoMj45LiBMb2kgYXBwbGljYWJsZTwvaDI+CjxwPkxvaSBuwrAgODktNDYyIGR1IDYganVpbGxldCAxOTg5IOKAlCBMb2kgQUxVUiBkdSAyNCBtYXJzIDIwMTQg4oCUIExvaSBFTEFOIGR1IDIzIG5vdmVtYnJlIDIwMTg8L3A+Cgo8ZGl2IGNsYXNzPSJzaWciPgogIDxkaXYgY2xhc3M9InNpZy1ib3giPgogICAgPGRpdiBjbGFzcz0ic2lnLWxhYmVsIj5MZSBiYWlsbGV1ciAocHJvcHJpw6l0YWlyZSk8L2Rpdj4KICAgIDxkaXYgY2xhc3M9InNpZy1hcmVhIj48c3BhbiBjbGFzcz0ic2lnLW5hbWUiPllhc3NpbmUgRUwgT1VBUkRJPC9zcGFuPjwvZGl2PgogICAgPGRpdiBjbGFzcz0ic2lnLWZvb3RlciI+RUwgT1VBUkRJIFlhc3NpbmU8YnI+RmFpdCDDoCDDiXZyeSwgbGUgMDEvMDcvMjAyNjwvZGl2PgogIDwvZGl2PgogIDxkaXYgY2xhc3M9InNpZy1ib3giPgogICAgPGRpdiBjbGFzcz0ic2lnLWxhYmVsIj5MZSBsb2NhdGFpcmUgKGx1IGV0IGFwcHJvdXbDqSk8L2Rpdj4KICAgIDxkaXYgY2xhc3M9InNpZy1hcmVhIj48c3BhbiBjbGFzcz0ic2lnLW5hbWUiPllhc3NpbmUgTUFDSE1PVU08L3NwYW4+PC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJzaWctZm9vdGVyIj5TaWduw6kgbGUgMDEvMDcvMjAyNjwvZGl2PgogIDwvZGl2Pgo8L2Rpdj4KPGRpdiBjbGFzcz0ibGVnYWwiPkRvY3VtZW50IMOpdGFibGkgY29uZm9ybcOpbWVudCDDoCBsYSBsb2kgbsKwIDg5LTQ2MiBkdSA2IGp1aWxsZXQgMTk4OSAoYXJ0aWNsZSAyMSkg4oCUIENvbnNlcnZhdGlvbiByZWNvbW1hbmTDqWUgOiAzIGFucyBtaW5pbXVtIGFwcsOocyBkw6lwYXJ0IGR1IGxvZ2VtZW50LjwvZGl2Pgo8L2JvZHk+CjwvaHRtbD4=";
+function downloadBail() {
+  var bytes = Uint8Array.from(atob(_bailB64), function(c){return c.charCodeAt(0);});
+  var html = new TextDecoder('utf-8').decode(bytes);
+  var w = window.open('','_blank');
+  if(w) { w.document.write(html); w.document.close(); }
+  else {
+    var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Bail_MACHMOUM_Yassine.html';
+    a.click();
+  }
+}
+function downloadQuittance(mois, content) {
+  var text = content.replace(/\\n/g, '\n');
+  var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Quittance_' + mois.replace(/ /g, '_') + '.txt';
+  a.click();
+}
+</script>
+</body>
+</html>
