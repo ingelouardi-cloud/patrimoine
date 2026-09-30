@@ -191,11 +191,22 @@ function downloadBail() {
 }
 function downloadQuittance(mois, content) {
   var text = content.replace(/\\n/g, '\n');
-  var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'Quittance_' + mois.replace(/ /g, '_') + '.txt';
-  a.click();
+  function build() {
+    var doc = new window.jspdf.jsPDF();
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(10);
+    var lines = doc.splitTextToSize(text, 180);
+    doc.text(lines, 14, 20);
+    doc.save('Quittance_' + mois.replace(/ /g, '_') + '.pdf');
+  }
+  if (!window.jspdf) {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.1/jspdf.umd.min.js';
+    s.onload = build;
+    document.head.appendChild(s);
+  } else {
+    build();
+  }
 }
 </script>
 </body>
