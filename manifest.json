@@ -72,5 +72,15 @@
     "slug": "bendaoud-abdelhamid",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/bendaoud-abdelhamid.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/bendaoud-abdelhamid-bail.pdf"
+  },
+  {
+    "nom": "MACHMOUM",
+    "prenom": "Yassine",
+    "pin": "4485",
+    "slug": "machmoum-yassine",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/machmoum-yassine.html",
+    "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/machmoum-yassine-bail.pdf",
+    "actif": false,
+    "date_sortie": "2026-09-30"
   }
 ]
