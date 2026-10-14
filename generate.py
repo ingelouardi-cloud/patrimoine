@@ -22,35 +22,15 @@ PBKDF2_ITER = 600000
 MOIS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre']
 MOIS_AR = ['يناير','فبراير','مارس','أبريل','ماي','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر']
 
-LOCATAIRES_FALLBACK = [
-    {'nom':'DRAA','prenom':'Abdelilah','loyer':400,'charges':50,'devise':'EUR',
-     'date_debut':'2025-09-30','date_fin':'2026-06-30','bien':'EVRY','bail':''},
-    {'nom':'MESBAH','prenom':'Abderahmane','loyer':400,'charges':50,'devise':'EUR',
-     'date_debut':'2026-04-01','date_fin':'2027-04-01','bien':'EVRY','bail':''},
-    {'nom':'EZZAHID','prenom':'Samir','loyer':435,'charges':50,'devise':'EUR',
-     'date_debut':'2026-02-01','date_fin':'2027-02-01','bien':'EVRY','bail':''},
-    {'nom':'MECHMOUM','prenom':'YASSINE','loyer':3000,'charges':100,'devise':'MAD',
-     'date_debut':'2026-07-01','date_fin':'2027-06-30','bien':'Bouskoura',
-     'adresse':'[ADRESSE], Bouskoura','bail':''},
-    {'nom':'OUASSOUR','prenom':'HASSAN','loyer':4600,'charges':0,'devise':'MAD',
-     'date_debut':'2026-07-06','date_fin':'2027-07-05','bien':'Nouaceur',
-     'adresse':'[ADRESSE]','bail':'',
-     'cin':'[CIN]','date_naissance':'[DATE]','lieu_naissance':'[LIEU]',
-     'etat_civil':'[ETAT_CIVIL]','telephone':'[TEL]',
-     'depot':9200,'raqm_iqari':'[TITRE]','etage':'الثاني','langue':'ar',
-     'type_bail':'habitation'},
-    {'nom':'SKIN EXPERTS','prenom':'','loyer':10500,'charges':0,'devise':'MAD',
-     'date_debut':'2026-07-06','date_fin':'2029-07-06','bien':'Bureau',
-     'adresse':'الدار البيضاء','bail':'',
-     'cin':'','telephone':'','depot':21000,
-     'langue':'ar','type_bail':'commercial'},
-]
+# Données personnelles des locataires (CIN, téléphone, naissance…) : jamais dans git.
+# Fichier local locataires.local.json (gitignoré) : {"locataires_fallback": [...], "bail_files": {...}}
+LOCAL_DATA_FILE = DIR / 'locataires.local.json'
+try: _LOCAL = json.loads(LOCAL_DATA_FILE.read_text(encoding='utf-8'))
+except Exception: _LOCAL = {}
+LOCATAIRES_FALLBACK = _LOCAL.get('locataires_fallback', [])
 
 # Bails Maroc uniquement — les bails France sont générés dynamiquement depuis les données app
-BAIL_FILES = {
-    'MECHMOUM': '20260627_234942_Contrat-MECHMOUM YASSINE.pdf',
-    'MACHMOUM': '20260627_234942_Contrat-MECHMOUM YASSINE.pdf',
-}
+BAIL_FILES = _LOCAL.get('bail_files', {})
 
 EJS_KEY = '73LOazWxg3Xb82Xjk'
 EJS_SVC = 'service_lwj64xp'
@@ -102,13 +82,15 @@ def locked_page(head, pin, content_html, page_js):
 <script>{pin_js(enc, len(pin))}</script></body></html>'''
 
 def copy_bail(loc, s):
-    """Copie le bail PDF dans contrats/ si disponible."""
+    """Bail PDF encodé en base64, intégré au contenu chiffré du portail (jamais publié en clair)."""
     bail_file = loc.get('bail','')
     bail_src = GED/bail_file if bail_file else None
     if bail_src and bail_src.is_file():
-        shutil.copy2(bail_src, CONTRATS/f'{s}-bail.pdf')
-        return f'../contrats/{s}-bail.pdf'
-    return '#'
+        return base64.b64encode(bail_src.read_bytes()).decode('ascii')
+    return ''
+
+# Ouvre le bail PDF intégré (_BAIL_PDF) via une URL blob
+PDF_JS = """function _openPdf(){if(!_BAIL_PDF){alert('Contrat non disponible');return}var b=Uint8Array.from(atob(_BAIL_PDF),function(c){return c.charCodeAt(0)});window.open(URL.createObjectURL(new Blob([b],{type:'application/pdf'})),'_blank')}"""
 
 def quittances_html(loc, devise='EUR'):
     """Génère les lignes de quittances pour toutes les périodes."""
@@ -463,7 +445,7 @@ def gen_portal_france(loc, known_pins):
     for i, c in enumerate(reversed(loc.get('contrats_historique', []))):
         c_deb, c_fin = fmt_date(c.get('date_debut','?')), fmt_date(c.get('date_fin','?'))
         c_total = c.get('loyer',0)+c.get('charges',0)
-        docs += f'<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #64748b"><span style="font-size:1.2rem">\U0001f4c4</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem;color:#94a3b8">Ancien contrat #{len(loc.get("contrats_historique",[]))-i}</div><div style="font-size:.7rem;color:#64748b">Du {c_deb} au {c_fin} \u2014 {c_total} \u20ac/mois</div></div><a href="{bail_url}" target="_blank" style="background:#64748b;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 PDF</a></div>'
+        docs += f'<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #64748b"><span style="font-size:1.2rem">\U0001f4c4</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem;color:#94a3b8">Ancien contrat #{len(loc.get("contrats_historique",[]))-i}</div><div style="font-size:.7rem;color:#64748b">Du {c_deb} au {c_fin} \u2014 {c_total} \u20ac/mois</div></div><a href="#" onclick="_openPdf();return false" style="background:#64748b;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 PDF</a></div>'
     docs += '</div>'
 
     # Bail HTML complet encodé base64 (évite les problèmes d'échappement)
@@ -472,7 +454,8 @@ def gen_portal_france(loc, known_pins):
     # JS fonctions France (signature, contrat PDF, quittance PDF)
     js_france = f'''
 var _SIG_ACTIVE={sig_active};
-var _BAIL_URL='{bail_url}';
+var _BAIL_PDF='{bail_url}';
+{PDF_JS}
 var _BAIL_B64='{bail_html_b64}';
 var _EJS_KEY='{EJS_KEY}';var _EJS_SVC='{EJS_SVC}';var _EJS_TPL='{EJS_TPL}';
 try{{emailjs.init({{publicKey:_EJS_KEY}})}}catch(e){{}}
@@ -482,7 +465,7 @@ function _checkSignedOnLoad(){{var sg=localStorage.getItem('contrat_signe_{nom}'
 function _signerContrat(){{if(localStorage.getItem('contrat_signe_{nom}'))return;if(!_SIG_ACTIVE){{alert('Signature non activ\u00e9e');return}}if(!confirm('Signer le contrat ?\\n{nom} {prenom}\\n{dd_fmt} au {df_fmt}\\n{total} \u20ac/mois'))return;var now=new Date();var ds=now.toLocaleDateString('fr-FR');var ts=now.toLocaleTimeString('fr-FR',{{hour:'2-digit',minute:'2-digit'}});localStorage.setItem('contrat_signe_{nom}',now.toISOString());_showSignedState(ds,ts);_sendEmail('Contrat sign\u00e9 - {nom}','{nom} {prenom} a sign\u00e9 le '+ds);_contratPDF()}}
 function _envoyerCommentaire(){{var t=document.getElementById('comment-text').value.trim();if(!t)return;document.getElementById('comment-zone').style.display='none';_sendEmail('Commentaire contrat - {nom}','{nom}: '+t)}}
 function _contratPDF(){{
-  if(_BAIL_URL&&_BAIL_URL!=='#'){{window.open(_BAIL_URL,'_blank');return;}}
+  if(_BAIL_PDF){{_openPdf();return;}}
   var bytes=Uint8Array.from(atob(_BAIL_B64),function(c){{return c.charCodeAt(0);}});
   var html=new TextDecoder('utf-8').decode(bytes);
   var w=window.open('','_blank');
@@ -504,8 +487,7 @@ function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSiz
 
     (PUBLIC/f'{s}.html').write_text(html, encoding='utf-8')
     return {'nom':nom,'prenom':prenom,'pin':pin,'slug':s,
-        'portal_url':f'https://ingelouardi-cloud.github.io/patrimoine/public/{s}.html',
-        'contrat_url':f'https://ingelouardi-cloud.github.io/patrimoine/contrats/{s}-bail.pdf'}
+        'portal_url':f'https://ingelouardi-cloud.github.io/patrimoine/public/{s}.html'}
 
 
 # ═══════════════════════════════════════════════
@@ -530,8 +512,8 @@ def gen_portal_maroc(loc, known_pins):
     # Documents section — PDF original + mention légalisation
     docs = f'<div style="display:flex;flex-direction:column;gap:8px">'
     docs += f'<div style="padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.2rem">\U0001f4cb</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">عقد الكراء / Contrat de Bail</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} MAD/mois</div></div>'
-    if bail_url != '#':
-        docs += f'<a href="{bail_url}" target="_blank" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Télécharger le contrat signé</a>'
+    if bail_url:
+        docs += f'<a href="#" onclick="_openPdf();return false" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Télécharger le contrat signé</a>'
     docs += f'<span style="padding:3px 8px;border-radius:4px;background:rgba(16,185,129,.13);color:#10b981;font-size:.68rem;font-weight:700">En cours</span></div>'
     docs += f'<div style="margin-top:8px;font-size:.75rem;color:#64748b">\U0001f4dd التوقيع أمام التصديق / Signature devant la l\u00e9galisation marocaine</div>'
     docs += '</div>'
@@ -544,6 +526,8 @@ def gen_portal_maroc(loc, known_pins):
 
     # JS Maroc — quittance bilingue FR+AR (HTML dans nouvelle fenêtre, jsPDF ne supporte pas l'arabe)
     js_maroc = f'''
+var _BAIL_PDF='{bail_url}';
+{PDF_JS}
 function _qpdf(mois,deb,fin){{
   var today=new Date().toLocaleDateString('fr-FR');
   var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>وصل الكراء</title><style>'
@@ -618,8 +602,7 @@ function _qpdf(mois,deb,fin){{
 
     (PUBLIC/f'{s}.html').write_text(html, encoding='utf-8')
     return {'nom':nom,'prenom':prenom,'pin':pin,'slug':s,
-        'portal_url':f'https://ingelouardi-cloud.github.io/patrimoine/public/{s}.html',
-        'contrat_url':f'https://ingelouardi-cloud.github.io/patrimoine/contrats/{s}-bail.pdf'}
+        'portal_url':f'https://ingelouardi-cloud.github.io/patrimoine/public/{s}.html'}
 
 
 # ═══════════════════════════════════════════════
