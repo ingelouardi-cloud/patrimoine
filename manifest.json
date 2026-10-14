@@ -2,7 +2,6 @@
   {
     "nom": "MESBAH",
     "prenom": "Abderahmane",
-    "pin": "3377",
     "slug": "mesbah-abderahmane",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/mesbah-abderahmane.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/mesbah-abderahmane-bail.pdf"
@@ -10,7 +9,6 @@
   {
     "nom": "DRAA",
     "prenom": "Abdelilah",
-    "pin": "2643",
     "slug": "draa-abdelilah",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/draa-abdelilah.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/draa-abdelilah-bail.pdf"
@@ -18,7 +16,6 @@
   {
     "nom": "EZZAHID",
     "prenom": "Sami",
-    "pin": "2387",
     "slug": "ezzahid-sami",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ezzahid-sami.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/ezzahid-sami-bail.pdf"
@@ -26,7 +23,6 @@
   {
     "nom": "MECHMOUM",
     "prenom": "YASSINE",
-    "pin": "4048",
     "slug": "mechmoum-yassine",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/mechmoum-yassine.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/mechmoum-yassine-bail.pdf",
@@ -36,7 +32,6 @@
   {
     "nom": "OUASSOUR",
     "prenom": "HASSAN",
-    "pin": "8203",
     "slug": "ouassour-hassan",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ouassour-hassan.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/ouassour-hassan-bail.pdf"
@@ -44,7 +39,6 @@
   {
     "nom": "SKIN EXPERTS",
     "prenom": "",
-    "pin": "5184",
     "slug": "skin-experts",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/skin-experts.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/skin-experts-bail.pdf"
@@ -52,7 +46,6 @@
   {
     "nom": "JARIDA",
     "prenom": "Amine",
-    "pin": "9959",
     "slug": "jarida-amine",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/jarida-amine.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/jarida-amine-bail.pdf"
@@ -60,7 +53,6 @@
   {
     "nom": "AIT M'BAREK",
     "prenom": "Soufiane",
-    "pin": "3066",
     "slug": "ait-mbarek-soufiane",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ait-mbarek-soufiane.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/ait-mbarek-soufiane-bail.pdf"
@@ -68,7 +60,6 @@
   {
     "nom": "BENDAOUD",
     "prenom": "Abdelhamid",
-    "pin": "9510",
     "slug": "bendaoud-abdelhamid",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/bendaoud-abdelhamid.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/bendaoud-abdelhamid-bail.pdf"
@@ -76,7 +67,6 @@
   {
     "nom": "MACHMOUM",
     "prenom": "Yassine",
-    "pin": "4485",
     "slug": "machmoum-yassine",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/machmoum-yassine.html",
     "contrat_url": "https://ingelouardi-cloud.github.io/patrimoine/contrats/machmoum-yassine-bail.pdf",

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Génère les portails locataires — 2 templates: France (EUR) + Maroc (MAD)."""
-import json, os, sys, hashlib, random, shutil, base64
+import json, os, sys, hashlib, secrets, shutil, base64
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+except ImportError:
+    sys.exit("Module 'cryptography' manquant : pip3 install cryptography")
 from datetime import datetime
 from pathlib import Path
 
@@ -10,6 +14,10 @@ CONTRATS = DIR / 'contrats'
 GED = Path(os.path.expanduser('~/Downloads/patrimoine-app/ged_documents'))
 PUBLIC.mkdir(exist_ok=True)
 CONTRATS.mkdir(exist_ok=True)
+# PINs : jamais publiés. Stockés hors git (.gitignore) + copie privée du manifest dans Downloads.
+PINS_FILE = DIR / '.pins.json'
+PRIVATE_MANIFEST = Path(os.path.expanduser('~/Downloads/patrimoine-app/portail-locataires/manifest.json'))
+PBKDF2_ITER = 600000
 
 MOIS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre']
 MOIS_AR = ['يناير','فبراير','مارس','أبريل','ماي','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر']
@@ -59,10 +67,39 @@ def fmt_date(d):
 def slug(nom, prenom=''):
     return (nom+'-'+prenom).lower().replace(' ','-').replace("'","") if prenom else nom.lower().replace(' ','-')
 
-def get_pin(loc, old_manifest):
-    nom = loc['nom']
-    old = next((m for m in old_manifest if m.get('nom','').lower()==nom.lower()),{})
-    return loc.get('portal_pin','') or loc.get('pin','') or old.get('pin','') or str(1000+random.randint(0,8999))
+def get_pin(loc, known_pins):
+    nom = loc['nom'].lower()
+    pin = loc.get('portal_pin','') or loc.get('pin','') or known_pins.get(nom,'') or str(1000+secrets.randbelow(9000))
+    known_pins[nom] = pin
+    return pin
+
+def load_known_pins():
+    """PINs connus : .pins.json, puis anciens manifests (migration des PINs déjà distribués)."""
+    pins = {}
+    for src in (DIR/'manifest.json', PRIVATE_MANIFEST):
+        try:
+            for m in json.loads(src.read_text()):
+                if m.get('pin') and m.get('nom'): pins.setdefault(m['nom'].lower(), m['pin'])
+        except Exception: pass
+    try: pins.update(json.loads(PINS_FILE.read_text()))
+    except Exception: pass
+    return pins
+
+def encrypt_payload(pin, payload):
+    """AES-256-GCM, clé dérivée du PIN par PBKDF2-SHA256 — déchiffré dans le navigateur (WebCrypto)."""
+    salt, iv = secrets.token_bytes(16), secrets.token_bytes(12)
+    key = hashlib.pbkdf2_hmac('sha256', pin.encode(), salt, PBKDF2_ITER, 32)
+    ct = AESGCM(key).encrypt(iv, json.dumps(payload, ensure_ascii=False).encode('utf-8'), None)
+    b64 = lambda b: base64.b64encode(b).decode('ascii')
+    return {'s': b64(salt), 'i': b64(iv), 'c': b64(ct)}
+
+def locked_page(head, pin, content_html, page_js):
+    """Page publique : seul l'écran PIN est en clair, le contenu et ses scripts sont chiffrés."""
+    enc = encrypt_payload(pin, {'h': content_html, 'j': page_js})
+    return f'''{head}<body>
+{pin_html(len(pin))}
+<div id="pc" style="display:none"></div>
+<script>{pin_js(enc, len(pin))}</script></body></html>'''
 
 def copy_bail(loc, s):
     """Copie le bail PDF dans contrats/ si disponible."""
@@ -237,17 +274,20 @@ CSS_BASE = '''body{font-family:system-ui;background:#0b0f19;color:#e2e8f0;margin
 .pd{width:14px;height:14px;border-radius:50%;background:#243050;border:2px solid #2a3655;transition:.2s}.pd.f{background:#3b82f6}
 .pb{width:64px;height:52px;border-radius:10px;background:#1a2236;border:1px solid #2a3655;color:#e2e8f0;font-size:1.2rem;font-weight:600;cursor:pointer}.pb:hover{background:#243050}'''
 
-def pin_html():
+def pin_html(n=4):
+    dots = ''.join(f'<div class="pd" id="d{i}"></div>' for i in range(n))
     return '''<div id="pl" class="po"><div style="text-align:center"><div style="font-size:3rem">\U0001f3e0</div><h1 style="font-size:1.4rem;color:#fbbf24">Portail Locataire</h1><p style="color:#64748b;font-size:.85rem">Entrez votre code PIN</p></div>
-<div style="display:flex;gap:12px"><div class="pd" id="d0"></div><div class="pd" id="d1"></div><div class="pd" id="d2"></div><div class="pd" id="d3"></div></div>
+<div style="display:flex;gap:12px">''' + dots + '''</div>
 <div id="pe" style="color:#ef4444;font-size:.82rem;min-height:20px"></div>
 <div style="display:grid;grid-template-columns:repeat(3,64px);gap:8px"><button class="pb" onclick="pk('1')">1</button><button class="pb" onclick="pk('2')">2</button><button class="pb" onclick="pk('3')">3</button><button class="pb" onclick="pk('4')">4</button><button class="pb" onclick="pk('5')">5</button><button class="pb" onclick="pk('6')">6</button><button class="pb" onclick="pk('7')">7</button><button class="pb" onclick="pk('8')">8</button><button class="pb" onclick="pk('9')">9</button><button class="pb" onclick="pk('clr')" style="font-size:.8rem">CLR</button><button class="pb" onclick="pk('0')">0</button><button class="pb" onclick="pk('del')" style="color:#ef4444">\u232b</button></div></div>'''
 
-def pin_js(pin_hash):
-    return f'''var _p='',_h='{pin_hash}';
-async function _sha(t){{var e=new TextEncoder().encode(t);var h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}}
-function pk(k){{if(k==='clr'){{_p='';ud();document.getElementById('pe').textContent='';return}}if(k==='del'){{_p=_p.slice(0,-1);ud();return}}if(_p.length>=4)return;_p+=k;ud();if(_p.length===4)_sha(_p).then(function(h){{if(h===_h){{document.getElementById('pl').style.display='none';document.getElementById('pc').style.display='block'}}else{{document.getElementById('pe').textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}}}})}}
-function ud(){{for(var i=0;i<4;i++){{var d=document.getElementById('d'+i);if(d)d.classList.toggle('f',i<_p.length)}}}}'''
+def pin_js(enc, n=4):
+    return f'''var _p='',_n={n},_busy=false,_E={json.dumps(enc)};
+function _b(s){{return Uint8Array.from(atob(s),function(c){{return c.charCodeAt(0)}})}}
+async function _dec(pin){{var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);var k=await crypto.subtle.deriveKey({{name:'PBKDF2',salt:_b(_E.s),iterations:{PBKDF2_ITER},hash:'SHA-256'}},km,{{name:'AES-GCM',length:256}},false,['decrypt']);var pt=await crypto.subtle.decrypt({{name:'AES-GCM',iv:_b(_E.i)}},k,_b(_E.c));return JSON.parse(new TextDecoder().decode(pt))}}
+function _open(d){{var pc=document.getElementById('pc');pc.innerHTML=d.h;var sc=document.createElement('script');sc.textContent=d.j;document.body.appendChild(sc);document.getElementById('pl').style.display='none';pc.style.display='block'}}
+function pk(k){{if(_busy)return;var pe=document.getElementById('pe');if(k==='clr'){{_p='';ud();pe.textContent='';return}}if(k==='del'){{_p=_p.slice(0,-1);ud();return}}if(_p.length>=_n)return;_p+=k;ud();if(_p.length===_n){{_busy=true;pe.style.color='#64748b';pe.textContent='V\u00e9rification\u2026';_dec(_p).then(function(d){{_busy=false;pe.textContent='';_open(d)}},function(){{_busy=false;pe.style.color='#ef4444';pe.textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}})}}}}
+function ud(){{for(var i=0;i<_n;i++){{var d=document.getElementById('d'+i);if(d)d.classList.toggle('f',i<_p.length)}}}}'''
 
 def header_html(nom, prenom, bien, loyer, devise):
     ds = devise
@@ -400,11 +440,10 @@ def gen_bail_html(loc):
 # PORTAIL FRANCE (EUR)
 # ═══════════════════════════════════════════════
 
-def gen_portal_france(loc, old_manifest):
+def gen_portal_france(loc, known_pins):
     nom, prenom = loc['nom'], loc['prenom']
     s = slug(nom, prenom)
-    pin = get_pin(loc, old_manifest); loc['pin'] = pin
-    pin_hash = hashlib.sha256(pin.encode()).hexdigest()
+    pin = get_pin(loc, known_pins); loc['pin'] = pin
     bien, loyer, charges = loc.get('bien','EVRY'), loc['loyer'], loc['charges']
     depot = loc.get('depot_garantie') or loyer
     total = loyer + charges
@@ -432,7 +471,6 @@ def gen_portal_france(loc, old_manifest):
 
     # JS fonctions France (signature, contrat PDF, quittance PDF)
     js_france = f'''
-{pin_js(pin_hash)}
 var _SIG_ACTIVE={sig_active};
 var _BAIL_URL='{bail_url}';
 var _BAIL_B64='{bail_html_b64}';
@@ -454,17 +492,15 @@ function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSiz
 
     html = f'''<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portail - {nom}</title>
 <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<style>{CSS_BASE}</style></head><body>
-{pin_html()}
-<div id="pc" style="display:none">
-{header_html(nom, prenom, bien, loyer, 'EUR')}
+<style>{CSS_BASE}</style></head>'''
+    content = f'''{header_html(nom, prenom, bien, loyer, 'EUR')}
 <div style="max-width:900px;margin:24px auto;padding:0 16px">
 {kpis_html(bien, dd_fmt, df_fmt, charges, 'EUR')}
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 Documents</h3></div><div style="padding:14px 18px">{docs}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f9fe Quittances de Loyer</h3></div><div style="padding:14px 18px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="border-bottom:2px solid #2a3655"><th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b;text-transform:uppercase">Periode</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Loyer</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Charges</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Total</th><th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b">PDF</th></tr></thead><tbody>{q}</tbody></table></div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4ac Messages du Proprietaire</h3></div><div style="padding:14px 18px">{messages_html(loc)}</div></div>
-<div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - Portail Securise</div></div></div>
-<script>{js_france}</script></body></html>'''
+<div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - Portail Securise</div></div>'''
+    html = locked_page(html, pin, content, js_france)
 
     (PUBLIC/f'{s}.html').write_text(html, encoding='utf-8')
     return {'nom':nom,'prenom':prenom,'pin':pin,'slug':s,
@@ -476,11 +512,10 @@ function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSiz
 # PORTAIL MAROC (MAD)
 # ═══════════════════════════════════════════════
 
-def gen_portal_maroc(loc, old_manifest):
+def gen_portal_maroc(loc, known_pins):
     nom, prenom = loc['nom'], loc['prenom']
     s = slug(nom, prenom)
-    pin = get_pin(loc, old_manifest); loc['pin'] = pin
-    pin_hash = hashlib.sha256(pin.encode()).hexdigest()
+    pin = get_pin(loc, known_pins); loc['pin'] = pin
     bien, loyer, charges = loc.get('bien','Maroc'), loc['loyer'], loc['charges']
     adresse_bien = loc.get('adresse', bien)
     total = loyer + charges
@@ -509,7 +544,6 @@ def gen_portal_maroc(loc, old_manifest):
 
     # JS Maroc — quittance bilingue FR+AR (HTML dans nouvelle fenêtre, jsPDF ne supporte pas l'arabe)
     js_maroc = f'''
-{pin_js(pin_hash)}
 function _qpdf(mois,deb,fin){{
   var today=new Date().toLocaleDateString('fr-FR');
   var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>وصل الكراء</title><style>'
@@ -572,17 +606,15 @@ function _qpdf(mois,deb,fin){{
 
     html = f'''<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة المكتري - {nom}</title>
 <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-<style>{CSS_BASE}</style></head><body>
-{pin_html()}
-<div id="pc" style="display:none">
-{header_html(nom, prenom, bien, loyer, 'MAD')}
+<style>{CSS_BASE}</style></head>'''
+    content = f'''{header_html(nom, prenom, bien, loyer, 'MAD')}
 <div style="max-width:900px;margin:24px auto;padding:0 16px">
 {kpis_html(bien, dd_fmt, df_fmt, charges, 'MAD')}
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 الوثائق / Documents</h3></div><div style="padding:14px 18px">{docs}</div></div>
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f9fe وصولات الكراء / Quittances</h3></div><div style="padding:14px 18px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr style="border-bottom:2px solid #2a3655"><th style="text-align:left;padding:8px;font-size:.68rem;color:#64748b">Periode</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Loyer</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Charges</th><th style="text-align:right;padding:8px;font-size:.68rem;color:#64748b">Total</th><th style="text-align:center;padding:8px;font-size:.68rem;color:#64748b">PDF</th></tr></thead><tbody>{q}</tbody></table></div></div>
 {cag_block}<div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden;border-left:3px solid #8b5cf6"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4ac رسائل المالك / Messages</h3></div><div style="padding:14px 18px">{messages_html(loc)}</div></div>
-<div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - بوابة المكتري</div></div></div>
-<script>{js_maroc}</script></body></html>'''
+<div style="text-align:center;padding:20px;font-size:.7rem;color:#64748b">EL OUARDI PATRIMOINE - بوابة المكتري</div></div>'''
+    html = locked_page(html, pin, content, js_maroc)
 
     (PUBLIC/f'{s}.html').write_text(html, encoding='utf-8')
     return {'nom':nom,'prenom':prenom,'pin':pin,'slug':s,
@@ -632,24 +664,26 @@ def main():
     if not locs:
         locs = LOCATAIRES_FALLBACK
 
-    old_manifest = []
-    try: old_manifest = json.loads((DIR/'manifest.json').read_text())
-    except: pass
+    known_pins = load_known_pins()
 
     manifest = []
     for loc in locs:
         is_maroc = loc.get('devise') == 'MAD'
         if is_maroc:
-            r = gen_portal_maroc(loc, old_manifest)
+            r = gen_portal_maroc(loc, known_pins)
         else:
-            r = gen_portal_france(loc, old_manifest)
+            r = gen_portal_france(loc, known_pins)
         manifest.append(r)
         flag = '\U0001f1f2\U0001f1e6' if is_maroc else '\U0001f1eb\U0001f1f7'
         print(f"  {flag} {r['nom']} {r['prenom']} PIN:{r['pin']} {'MAD' if is_maroc else 'EUR'}")
 
-    (DIR/'manifest.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
-    dst = Path(os.path.expanduser('~/Downloads/patrimoine-app/portail-locataires/manifest.json'))
-    if dst.parent.exists(): shutil.copy2(DIR/'manifest.json', dst)
+    PINS_FILE.write_text(json.dumps(known_pins, indent=2, ensure_ascii=False))
+    os.chmod(PINS_FILE, 0o600)
+    # Manifest public (repo) sans PIN ; copie privée locale avec PIN pour l'app
+    public_manifest = [{k:v for k,v in m.items() if k!='pin'} for m in manifest]
+    (DIR/'manifest.json').write_text(json.dumps(public_manifest, indent=2, ensure_ascii=False))
+    if PRIVATE_MANIFEST.parent.exists():
+        PRIVATE_MANIFEST.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
     os.system(f'cd {DIR} && git add -A && git commit -m "MAJ portails" 2>/dev/null')
     os.system(f'cd {DIR} && git push origin main 2>/dev/null')
     print(f"  {len(manifest)} portails generes")
