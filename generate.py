@@ -271,6 +271,17 @@ function _open(d){{var pc=document.getElementById('pc');pc.innerHTML=d.h;var sc=
 function pk(k){{if(_busy)return;var pe=document.getElementById('pe');if(k==='clr'){{_p='';ud();pe.textContent='';return}}if(k==='del'){{_p=_p.slice(0,-1);ud();return}}if(_p.length>=_n)return;_p+=k;ud();if(_p.length===_n){{_busy=true;pe.style.color='#64748b';pe.textContent='V\u00e9rification\u2026';_dec(_p).then(function(d){{_busy=false;pe.textContent='';_open(d)}},function(){{_busy=false;pe.style.color='#ef4444';pe.textContent='Code PIN incorrect';_p='';setTimeout(ud,300)}})}}}}
 function ud(){{for(var i=0;i<_n;i++){{var d=document.getElementById('d'+i);if(d)d.classList.toggle('f',i<_p.length)}}}}'''
 
+def resiliation_banner(loc):
+    """Bandeau rouge « contrat résilié » pour un locataire inactif (quittances toujours disponibles)."""
+    if loc.get('actif', True) and not loc.get('resilie'):
+        return ''
+    sortie = fmt_date((loc.get('date_sortie') or loc.get('date_fin') or '')[:10])
+    return ('<div style="background:#7f1d1d;border-bottom:3px solid #ef4444;color:#fff;text-align:center;padding:14px 16px">'
+        f'<div style="font-size:1.25rem;font-weight:900;letter-spacing:.06em">\u26d4 INACTIF \u2014 CONTRAT R\u00c9SILI\u00c9 le {sortie}</div>'
+        f'<div style="font-size:1.1rem;font-weight:800;margin-top:4px" dir="rtl">\u0639\u0642\u062f \u0627\u0644\u0643\u0631\u0627\u0621 \u0645\u0646\u062a\u0647\u064a \u2014 \u062a\u0645 \u0641\u0633\u062e \u0627\u0644\u0639\u0642\u062f \u0628\u062a\u0627\u0631\u064a\u062e {sortie}</div>'
+        '<div style="font-size:.78rem;opacity:.85;margin-top:4px">Les quittances restent t\u00e9l\u00e9chargeables ci-dessous \u2014 \u064a\u0645\u0643\u0646\u0643\u0645 \u062a\u062d\u0645\u064a\u0644 \u0648\u0635\u0648\u0644\u0627\u062a \u0627\u0644\u0643\u0631\u0627\u0621 \u0623\u0633\u0641\u0644\u0647</div>'
+        '</div>')
+
 def header_html(nom, prenom, bien, loyer, devise):
     ds = devise
     return f'''<div style="background:#111827;border-bottom:1px solid #2a3655;padding:16px 24px;display:flex;align-items:center;gap:12px">
@@ -476,7 +487,7 @@ function _qpdf(mois,deb,fin){{try{{var d=new jspdf.jsPDF();var y=20;d.setFontSiz
     html = f'''<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portail - {nom}</title>
 <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>{CSS_BASE}</style></head>'''
-    content = f'''{header_html(nom, prenom, bien, loyer, 'EUR')}
+    content = f'''{resiliation_banner(loc)}{header_html(nom, prenom, bien, loyer, 'EUR')}
 <div style="max-width:900px;margin:24px auto;padding:0 16px">
 {kpis_html(bien, dd_fmt, df_fmt, charges, 'EUR')}
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 Documents</h3></div><div style="padding:14px 18px">{docs}</div></div>
@@ -591,7 +602,7 @@ function _qpdf(mois,deb,fin){{
     html = f'''<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة المكتري - {nom}</title>
 <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>{CSS_BASE}</style></head>'''
-    content = f'''{header_html(nom, prenom, bien, loyer, 'MAD')}
+    content = f'''{resiliation_banner(loc)}{header_html(nom, prenom, bien, loyer, 'MAD')}
 <div style="max-width:900px;margin:24px auto;padding:0 16px">
 {kpis_html(bien, dd_fmt, df_fmt, charges, 'MAD')}
 <div style="background:#111827;border:1px solid #2a3655;border-radius:12px;margin-bottom:20px;overflow:hidden"><div style="padding:14px 18px;border-bottom:1px solid #2a3655"><h3 style="font-size:.9rem;font-weight:700;margin:0">\U0001f4c4 الوثائق / Documents</h3></div><div style="padding:14px 18px">{docs}</div></div>
