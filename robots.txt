@@ -1,2 +1,3 @@
 User-agent: *
-Disallow: /public/contrats/
+Disallow: /public/
+Disallow: /portail-locataires/

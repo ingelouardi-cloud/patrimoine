@@ -1,0 +1,5 @@
+.pins.json
+# Données personnelles : jamais publiées
+locataires.local.json
+contrats/*.pdf
+.DS_Store
