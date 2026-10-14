@@ -92,6 +92,15 @@ def copy_bail(loc, s):
 # Ouvre le bail PDF intégré (_BAIL_PDF) via une URL blob
 PDF_JS = """function _openPdf(){if(!_BAIL_PDF){alert('Contrat non disponible');return}var b=Uint8Array.from(atob(_BAIL_PDF),function(c){return c.charCodeAt(0)});window.open(URL.createObjectURL(new Blob([b],{type:'application/pdf'})),'_blank')}"""
 
+def est_resilie(loc):
+    return not loc.get('actif', True) or bool(loc.get('resilie'))
+
+def fin_location(loc):
+    """Date de sortie d'un locataire résilié (None si bail en cours)."""
+    if not est_resilie(loc): return None
+    try: return datetime.strptime((loc.get('date_sortie') or loc.get('date_fin') or '')[:10], '%Y-%m-%d')
+    except ValueError: return None
+
 def quittances_html(loc, devise='EUR'):
     """Génère les lignes de quittances pour toutes les périodes."""
     rows = ''
@@ -110,7 +119,7 @@ def quittances_html(loc, devise='EUR'):
     try:
         periods.append({
             'start': datetime.strptime(loc['date_debut'],'%Y-%m-%d').replace(day=1),
-            'end': now, 'loyer': loc['loyer'], 'charges': loc['charges']
+            'end': fin_location(loc) or now, 'loyer': loc['loyer'], 'charges': loc['charges']
         })
     except: pass
 
@@ -273,7 +282,7 @@ function ud(){{for(var i=0;i<_n;i++){{var d=document.getElementById('d'+i);if(d)
 
 def resiliation_banner(loc):
     """Bandeau rouge « contrat résilié » pour un locataire inactif (quittances toujours disponibles)."""
-    if loc.get('actif', True) and not loc.get('resilie'):
+    if not est_resilie(loc):
         return ''
     sortie = fmt_date((loc.get('date_sortie') or loc.get('date_fin') or '')[:10])
     return ('<div style="background:#7f1d1d;border-bottom:3px solid #ef4444;color:#fff;text-align:center;padding:14px 16px">'
@@ -525,7 +534,8 @@ def gen_portal_maroc(loc, known_pins):
     docs += f'<div style="padding:10px;background:#1a2236;border-radius:8px;border-left:3px solid #10b981"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.2rem">\U0001f4cb</span><div style="flex:1"><div style="font-weight:600;font-size:.82rem">عقد الكراء / Contrat de Bail</div><div style="font-size:.7rem;color:#64748b">Du {dd_fmt} au {df_fmt} \u2014 {total} MAD/mois</div></div>'
     if bail_url:
         docs += f'<a href="#" onclick="_openPdf();return false" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.75rem;cursor:pointer;text-decoration:none;font-weight:600">\U0001f4e5 Télécharger le contrat signé</a>'
-    docs += f'<span style="padding:3px 8px;border-radius:4px;background:rgba(16,185,129,.13);color:#10b981;font-size:.68rem;font-weight:700">En cours</span></div>'
+    badge = '<span style="padding:3px 8px;border-radius:4px;background:rgba(239,68,68,.13);color:#ef4444;font-size:.68rem;font-weight:700">Résilié</span>' if est_resilie(loc) else '<span style="padding:3px 8px;border-radius:4px;background:rgba(16,185,129,.13);color:#10b981;font-size:.68rem;font-weight:700">En cours</span>'
+    docs += f'{badge}</div>'
     docs += f'<div style="margin-top:8px;font-size:.75rem;color:#64748b">\U0001f4dd التوقيع أمام التصديق / Signature devant la l\u00e9galisation marocaine</div>'
     docs += '</div>'
     # Anciens contrats
