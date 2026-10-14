@@ -6,8 +6,8 @@
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ouassour-hassan.html"
   },
   {
-    "nom": "SKIN",
-    "prenom": "EXPERTS",
+    "nom": "SKIN EXPERTS",
+    "prenom": "",
     "slug": "skin-experts",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/skin-experts.html"
   },
@@ -16,6 +16,12 @@
     "prenom": "Soufiane",
     "slug": "ait-mbarek-soufiane",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ait-mbarek-soufiane.html"
+  },
+  {
+    "nom": "MACHMOUM",
+    "prenom": "Yassine",
+    "slug": "machmoum-yassine",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/machmoum-yassine.html"
   },
   {
     "nom": "JARIDA",
