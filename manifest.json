@@ -1,0 +1,50 @@
+[
+  {
+    "nom": "OUASSOUR",
+    "prenom": "HASSAN",
+    "slug": "ouassour-hassan",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ouassour-hassan.html"
+  },
+  {
+    "nom": "SKIN",
+    "prenom": "EXPERTS",
+    "slug": "skin-experts",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/skin-experts.html"
+  },
+  {
+    "nom": "AIT M'BAREK",
+    "prenom": "Soufiane",
+    "slug": "ait-mbarek-soufiane",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ait-mbarek-soufiane.html"
+  },
+  {
+    "nom": "JARIDA",
+    "prenom": "Amine",
+    "slug": "jarida-amine",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/jarida-amine.html"
+  },
+  {
+    "nom": "MESBAH",
+    "prenom": "Abderahmane",
+    "slug": "mesbah-abderahmane",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/mesbah-abderahmane.html"
+  },
+  {
+    "nom": "DRAA",
+    "prenom": "Abdelilah",
+    "slug": "draa-abdelilah",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/draa-abdelilah.html"
+  },
+  {
+    "nom": "EZZAHID",
+    "prenom": "Sami",
+    "slug": "ezzahid-sami",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ezzahid-sami.html"
+  },
+  {
+    "nom": "BENDAOUD",
+    "prenom": "Abdelhamid",
+    "slug": "bendaoud-abdelhamid",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/bendaoud-abdelhamid.html"
+  }
+]
