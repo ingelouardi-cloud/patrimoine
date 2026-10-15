@@ -188,8 +188,11 @@ def quittances_data(loc):
             lc = next(((p['loyer'], p['charges']) for p in periods if p['start'].strftime('%Y-%m') <= key <= p['end'].strftime('%Y-%m')), (loc['loyer'], loc['charges']))
             months[key] = lc
 
+    # Mois antérieurs au premier paiement enregistré : non listés (historique de paiements incomplet dans l'app)
+    premier = min(pay) if pay else None
     out = []
     for key in sorted(months):
+        if premier and key < premier: continue
         y, m = int(key[:4]), int(key[5:])
         loyer, charges = months[key]
         total = loyer + charges
@@ -208,7 +211,7 @@ def quittances_html(loc, devise='EUR'):
     """Lignes du tableau des quittances + données JS (_Q) des quittances délivrables."""
     ds = esc(devise)
     maroc = devise == 'MAD'
-    if paiements_par_mois(loc) is None:
+    if not paiements_par_mois(loc):   # champ absent ou aucun paiement enregistré
         msg = 'Les quittances appara\u00eetront ici d\u00e8s que le paiement du loyer aura \u00e9t\u00e9 enregistr\u00e9.'
         if maroc: msg += '<div dir="rtl" style="margin-top:4px">\u0633\u062a\u0638\u0647\u0631 \u0648\u0635\u0648\u0644\u0627\u062a \u0627\u0644\u0643\u0631\u0627\u0621 \u0647\u0646\u0627 \u0628\u0645\u062c\u0631\u062f \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0623\u062f\u0627\u0621.</div>'
         return f'<tr><td colspan="5" style="padding:12px;text-align:center;color:#64748b;font-size:.78rem">{msg}</td></tr>', []
