@@ -1,5 +1,11 @@
 [
   {
+    "nom": "JARIDA",
+    "prenom": "Amine",
+    "slug": "jarida-amine",
+    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/jarida-amine.html"
+  },
+  {
     "nom": "OUASSOUR",
     "prenom": "HASSAN",
     "slug": "ouassour-hassan",
@@ -16,12 +22,6 @@
     "prenom": "Soufiane",
     "slug": "ait-mbarek-soufiane",
     "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/ait-mbarek-soufiane.html"
-  },
-  {
-    "nom": "JARIDA",
-    "prenom": "Amine",
-    "slug": "jarida-amine",
-    "portal_url": "https://ingelouardi-cloud.github.io/patrimoine/public/jarida-amine.html"
   },
   {
     "nom": "MESBAH",
